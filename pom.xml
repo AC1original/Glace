@@ -8,6 +8,47 @@
     <artifactId>Glace</artifactId>
     <version>1.0-SNAPSHOT</version>
 
+    <properties>
+        <!-- LWJGL -->
+        <lwjgl.version>3.3.6</lwjgl.version>
+        <!-- LWJGL end -->
+
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <profiles>
+        <!-- LWJGL -->
+        <profile><id>lwjgl-natives-freebsd-amd64</id><activation><os><family>unix</family><name>freebsd</name><arch>amd64</arch></os></activation><properties><lwjgl.natives>natives-freebsd</lwjgl.natives></properties></profile>
+        <profile><id>lwjgl-natives-linux-amd64</id><activation><os><family>unix</family><name>linux</name><arch>amd64</arch></os></activation><properties><lwjgl.natives>natives-linux</lwjgl.natives></properties></profile>
+        <profile><id>lwjgl-natives-linux-aarch64</id><activation><os><family>unix</family><name>linux</name><arch>aarch64</arch></os></activation><properties><lwjgl.natives>natives-linux-arm64</lwjgl.natives></properties></profile>
+        <profile><id>lwjgl-natives-linux-arm</id><activation><os><family>unix</family><name>linux</name><arch>arm</arch></os></activation><properties><lwjgl.natives>natives-linux-arm32</lwjgl.natives></properties></profile>
+        <profile><id>lwjgl-natives-linux-arm32</id><activation><os><family>unix</family><name>linux</name><arch>arm32</arch></os></activation><properties><lwjgl.natives>natives-linux-arm32</lwjgl.natives></properties></profile>
+        <profile><id>lwjgl-natives-linux-ppc64le</id><activation><os><family>unix</family><name>linux</name><arch>ppc64le</arch></os></activation><properties><lwjgl.natives>natives-linux-ppc64le</lwjgl.natives></properties></profile>
+        <profile><id>lwjgl-natives-linux-riscv64</id><activation><os><family>unix</family><name>linux</name><arch>riscv64</arch></os></activation><properties><lwjgl.natives>natives-linux-riscv64</lwjgl.natives></properties></profile>
+        <profile><id>lwjgl-natives-macos-x86_64</id><activation><os><family>mac</family><arch>x86_64</arch></os></activation><properties><lwjgl.natives>natives-macos</lwjgl.natives></properties></profile>
+        <profile><id>lwjgl-natives-macos-aarch64</id><activation><os><family>mac</family><arch>aarch64</arch></os></activation><properties><lwjgl.natives>natives-macos-arm64</lwjgl.natives></properties></profile>
+        <profile><id>lwjgl-natives-windows-amd64</id><activation><os><family>windows</family><arch>amd64</arch></os></activation><properties><lwjgl.natives>natives-windows</lwjgl.natives></properties></profile>
+        <profile><id>lwjgl-natives-windows-x86</id><activation><os><family>windows</family><arch>x86</arch></os></activation><properties><lwjgl.natives>natives-windows-x86</lwjgl.natives></properties></profile>
+        <profile><id>lwjgl-natives-windows-aarch64</id><activation><os><family>windows</family><arch>aarch64</arch></os></activation><properties><lwjgl.natives>natives-windows-arm64</lwjgl.natives></properties></profile>
+        <!-- LWJGL end -->
+    </profiles>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- LWJGL -->
+            <dependency>
+                <groupId>org.lwjgl</groupId>
+                <artifactId>lwjgl-bom</artifactId>
+                <version>${lwjgl.version}</version>
+                <scope>import</scope>
+                <type>pom</type>
+            </dependency>
+            <!-- LWJGL end -->
+        </dependencies>
+    </dependencyManagement>
+
     <repositories>
         <repository>
             <id>jitpack.io</id>
@@ -27,6 +68,16 @@
             <version>1.18.38</version>
             <scope>provided</scope>
         </dependency>
+        <!-- LWJGL -->
+        <dependency><groupId>org.lwjgl</groupId><artifactId>lwjgl</artifactId></dependency>
+        <dependency><groupId>org.lwjgl</groupId><artifactId>lwjgl-glfw</artifactId></dependency>
+        <dependency><groupId>org.lwjgl</groupId><artifactId>lwjgl-opengl</artifactId></dependency>
+        <dependency><groupId>org.lwjgl</groupId><artifactId>lwjgl-stb</artifactId></dependency>
+        <dependency><groupId>org.lwjgl</groupId><artifactId>lwjgl</artifactId><classifier>${lwjgl.natives}</classifier></dependency>
+        <dependency><groupId>org.lwjgl</groupId><artifactId>lwjgl-glfw</artifactId><classifier>${lwjgl.natives}</classifier></dependency>
+        <dependency><groupId>org.lwjgl</groupId><artifactId>lwjgl-opengl</artifactId><classifier>${lwjgl.natives}</classifier></dependency>
+        <dependency><groupId>org.lwjgl</groupId><artifactId>lwjgl-stb</artifactId><classifier>${lwjgl.natives}</classifier></dependency>
+        <!-- LWJGL end -->
     </dependencies>
 
     <build>
@@ -46,11 +97,5 @@
             </plugin>
         </plugins>
     </build>
-
-    <properties>
-        <maven.compiler.source>8</maven.compiler.source>
-        <maven.compiler.target>8</maven.compiler.target>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    </properties>
 
 </project>
