@@ -3,10 +3,13 @@ package com.snac.graphics;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Stream;
 
 public abstract class Canvas {
     protected final List<Renderable> renderables = Collections.synchronizedList(new ArrayList<>());
+    protected final ReadWriteLock rwLock = new ReentrantReadWriteLock();
 
     public void addRenderable(final Renderable renderable) {
         renderables.add(renderable);
@@ -23,8 +26,11 @@ public abstract class Canvas {
     }
 
     public Stream<Renderable> streamRenderables() {
-        synchronized (renderables) {
+        rwLock.readLock().lock();
+        try {
             return new ArrayList<>(renderables).stream();
+        } finally {
+            rwLock.readLock().unlock();
         }
     }
 
@@ -50,8 +56,19 @@ public abstract class Canvas {
     }
 
 
-    public synchronized void render(Brush<?> brush) {
-        renderables.forEach(renderable -> renderable.render(brush));
+    public void render(Brush<?, ?> brush) {
+        rwLock.readLock().lock();
+        try {
+            var it = renderables.iterator();
+            while (it.hasNext()) {
+                var i = it.next();
+                if (i.visible()) {
+                    i.render(brush);
+                }
+            }
+        } finally {
+            rwLock.readLock().unlock();
+        }
     }
 
     public static class DefaultCanvas extends Canvas {}
