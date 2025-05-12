@@ -1,28 +1,58 @@
 package com.snac.graphics;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Stream;
 
 public abstract class Canvas {
-    private final List<Renderable> drawables = new ArrayList<>();
+    protected final List<Renderable> renderables = Collections.synchronizedList(new ArrayList<>());
 
-    public void addDrawable(Renderable drawable) {
-        drawables.add(drawable);
+    public void addRenderable(final Renderable renderable) {
+        renderables.add(renderable);
+        sortRenderables();
     }
 
-    public void removeDrawable(Renderable drawable) {
-        drawables.remove(drawable);
+    public void removeRenderable(final Renderable renderable) {
+        renderables.remove(renderable);
+        sortRenderables();
     }
 
-    public void clearDrawables() {
-        drawables.clear();
+    public List<Renderable> getRenderables() {
+        return List.copyOf(renderables);
     }
 
-    public List<Renderable> getDrawables() {
-        return List.copyOf(drawables);
+    public Stream<Renderable> streamRenderables() {
+        synchronized (renderables) {
+            return new ArrayList<>(renderables).stream();
+        }
     }
 
-    protected void render() {
-
+    public void clearRenderables() {
+        renderables.clear();
     }
+
+    public void sortRenderables() {
+        synchronized (renderables) {
+            renderables.sort((a, b) -> {
+                boolean aHasLayer = a.layer() >= 0;
+                boolean bHasLayer = b.layer() >= 0;
+
+                if (aHasLayer && bHasLayer) {
+                    return Integer.compare(a.layer(), b.layer());
+                } else if (!aHasLayer && !bHasLayer) {
+                    return a.priority().compareTo(b.priority());
+                } else {
+                    return aHasLayer ? -1 : 1;
+                }
+            });
+        }
+    }
+
+
+    public synchronized void render(Brush<?> brush) {
+        renderables.forEach(renderable -> renderable.render(brush));
+    }
+
+    public static class DefaultCanvas extends Canvas {}
 }

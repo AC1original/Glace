@@ -1,20 +1,9 @@
 package com.snac.main;
 
-import com.snac.graphics.impl.DefaultRenderer;
+import com.snac.graphics.impl.SkijaRenderer;
 
 public class Glace {
     public static void main(String[] args) {
-        new DefaultRenderer();
-    }
-
-    private static Glace instance;
-
-    private Glace() {}
-
-    public static Glace setup() {
-        if (instance == null) {
-            instance = new Glace();
-        }
-        return instance;
+        new SkijaRenderer().createWindow(800, 600, "Glace");
     }
 }

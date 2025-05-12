@@ -2,6 +2,8 @@ package com.snac.graphics;
 
 public interface Renderable {
 
+    void render(Brush<?> brush);
+
     boolean visible();
 
     Priority priority();
