@@ -1,10 +1,9 @@
-package com.snac.main;
+package com.snac.util;
 
 import lombok.Getter;
-import lombok.Setter;
 
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
 import java.util.function.Consumer;
 
 @Getter
@@ -13,6 +12,8 @@ public class Loop {
     private boolean paused = false;
     private boolean runOnThread = false;
     private String threadName = "";
+
+    private ExecutorService executorService;
 
     public Loop runOnThread(boolean runOnThread) {
         this.runOnThread = runOnThread;
@@ -25,10 +26,24 @@ public class Loop {
     }
 
     public Loop start(final int TARGET_TPS, Consumer<Integer> action) {
+        return start(TARGET_TPS, action, () -> {});
+    }
+
+    public Loop start(final int TARGET_TPS, Consumer<Integer> action, Runnable shutdownHook) {
         if (!running) {
             running = true;
         } else {
             return this;
+        }
+
+        if (executorService == null) {
+            executorService = Executors.newSingleThreadExecutor(r -> {
+                Thread thread = new Thread(r, threadName);
+                if (!threadName.isBlank()) {
+                    thread.setName(threadName);
+                }
+                return thread;
+            });
         }
 
         Runnable runnable = () -> {
@@ -76,17 +91,11 @@ public class Loop {
                     }
                 }
             }
+            shutdownHook.run();
         };
 
         if (runOnThread) {
-            ThreadFactory namedThreadFactory = (r) -> {
-                Thread thread = new Thread(r, threadName);
-                if (!threadName.isBlank()) {
-                    thread.setName(threadName);
-                }
-                return thread;
-            };
-            Executors.newSingleThreadExecutor(namedThreadFactory).execute(runnable);
+            executorService.execute(runnable);
         } else {
             runnable.run();
         }
@@ -95,6 +104,9 @@ public class Loop {
 
     public void stop() {
         running = false;
+        if (executorService != null) {
+            executorService.shutdownNow();
+        }
     }
 
     public void pause() {
