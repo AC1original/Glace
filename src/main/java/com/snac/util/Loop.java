@@ -1,5 +1,6 @@
 package com.snac.util;
 
+import de.snac.Ez2Log;
 import lombok.Getter;
 
 import java.util.concurrent.ExecutorService;
@@ -26,7 +27,8 @@ public class Loop {
     }
 
     public Loop start(final int TARGET_TPS, Consumer<Integer> action) {
-        return start(TARGET_TPS, action, () -> {});
+        return start(TARGET_TPS, action, () -> {
+        });
     }
 
     public Loop start(final int TARGET_TPS, Consumer<Integer> action, Runnable shutdownHook) {
@@ -47,51 +49,53 @@ public class Loop {
         }
 
         Runnable runnable = () -> {
+            try {
+                long secCount = System.currentTimeMillis();
+                int tps = 0;
+                int tCount = 0;
 
-            long secCount = System.currentTimeMillis();
-            int tps = 0;
-            int tCount = 0;
+                long lastTime = System.nanoTime();
 
-            long lastTime = System.nanoTime();
-
-            while (true) {
-                if (!running) {
-                    break;
-                }
-
-                if (paused) {
-                    try {
-                        Thread.sleep(20);
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
+                while (running) {
+                    if (paused) {
+                        try {
+                            Thread.sleep(20);
+                        } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
+                            break;
+                        }
+                        continue;
                     }
-                    continue;
-                }
 
-                final long tickTime = 1_000_000_000 / TARGET_TPS;
-                long now = System.nanoTime();
-                long elapsed = now - lastTime;
+                    final long tickTime = 1_000_000_000 / TARGET_TPS;
+                    long now = System.nanoTime();
+                    long elapsed = now - lastTime;
 
-                if (System.currentTimeMillis() - secCount >= 1_000) {
-                    secCount = System.currentTimeMillis();
-                    tps = tCount;
-                    tCount = 0;
-                }
+                    if (System.currentTimeMillis() - secCount >= 1_000) {
+                        secCount = System.currentTimeMillis();
+                        tps = tCount;
+                        tCount = 0;
+                    }
 
-                if (elapsed >= tickTime) {
-                    tCount++;
-                    action.accept(tps);
-                    lastTime += tickTime;
-                } else {
-                    long sleepNanos = tickTime - elapsed;
-                    try {
-                        Thread.sleep(sleepNanos / 1_000_000, (int)(sleepNanos % 1_000_000));
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
+                    if (elapsed >= tickTime) {
+                        tCount++;
+                        action.accept(tps);
+                        lastTime += tickTime;
+                    } else {
+                        long sleepNanos = tickTime - elapsed;
+                        try {
+                            Thread.sleep(sleepNanos / 1_000_000, (int) (sleepNanos % 1_000_000));
+                        } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
+                            throw new RuntimeException(e);
+                        }
                     }
                 }
+                shutdownHook.run();
+            } catch (Exception e) {
+                Ez2Log.error(this, "Error in loop", e);
+                stop();
             }
-            shutdownHook.run();
         };
 
         if (runOnThread) {
