@@ -26,12 +26,11 @@ public class Loop {
         return this;
     }
 
-    public Loop start(final int TARGET_TPS, Consumer<Integer> action) {
-        return start(TARGET_TPS, action, () -> {
-        });
+    public Loop start(final int TARGET_TPS) {
+        return start(() -> {}, TARGET_TPS, (tps) -> {}, () -> {});
     }
 
-    public Loop start(final int TARGET_TPS, Consumer<Integer> action, Runnable shutdownHook) {
+    public Loop start(Runnable preRun, final int TARGET_TPS, Consumer<Integer> action, Runnable shutdownHook) {
         if (!running) {
             running = true;
         } else {
@@ -99,8 +98,10 @@ public class Loop {
         };
 
         if (runOnThread) {
+            executorService.execute(preRun);
             executorService.execute(runnable);
         } else {
+            preRun.run();
             runnable.run();
         }
         return this;
