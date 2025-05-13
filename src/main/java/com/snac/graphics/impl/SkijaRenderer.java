@@ -9,7 +9,6 @@ import io.github.humbleui.skija.*;
 import io.github.humbleui.skija.impl.Stats;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import static org.lwjgl.glfw.Callbacks.*;
 import static org.lwjgl.glfw.GLFW.*;
@@ -27,14 +26,19 @@ public class SkijaRenderer implements Renderer {
     private int width;
     private int height;
     private float dpi = 1f;
-    private Brush<Integer> brush;
+    private Brush<?, ?> brush;
     private DirectContext context;
     private BackendRenderTarget renderTarget;
     private Surface surface;
     private io.github.humbleui.skija.Canvas skijaCanvas;
 
     public SkijaRenderer() {
+        this(new Canvas.DefaultCanvas());
+    }
+
+    public SkijaRenderer(Canvas canvas) {
         GLFWErrorCallback.createPrint(System.err).set();
+        this.canvas = canvas;
         if (!glfwInit()) {
             throw new IllegalStateException("Unable to initialize GLFW");
         }
@@ -72,31 +76,31 @@ public class SkijaRenderer implements Renderer {
         }
 
         updateDimensions();
-        glfwMakeContextCurrent(window);
-        glfwSwapInterval(vsync ? 1 : 0);
-        glfwShowWindow(window);
-
         Ez2Log.info(this, "Created window. Starting render loop");
 
         startRenderLoop();
     }
 
     private synchronized void startRenderLoop() {
-        GL.createCapabilities();
-        context = DirectContext.makeGL();
-        glfwSetWindowSizeCallback(window, (window, width, height) -> {
-            updateDimensions();
-            initSkija();
-            render();
-        });
-        initSkija();
-
-
         var loop = new Loop()
                 .runOnThread(true)
                 .setThreadName("Glace-Rendering");
 
-        loop.start(maxFps, fps -> {
+        loop.start(() -> {
+            glfwMakeContextCurrent(window);
+            GL.createCapabilities();
+            glfwSwapInterval(vsync ? 1 : 0);
+            glfwShowWindow(window);
+
+            context = DirectContext.makeGL();
+            glfwSetWindowSizeCallback(window, (window, width, height) -> {
+                updateDimensions();
+                initSkija();
+                render();
+            });
+            initSkija();
+
+        }, maxFps, fps -> {
             this.fps = fps;
 
             render();
@@ -104,7 +108,7 @@ public class SkijaRenderer implements Renderer {
 
             if (glfwWindowShouldClose(window)) {
                 loop.stop();
-                Ez2Log.info(this, "LWJGL has been terminated. Render loop stopped");
+                Ez2Log.info(this, "LWJGL has been terminated");
             }
         }, () -> {
             glfwFreeCallbacks(window);
@@ -149,6 +153,8 @@ public class SkijaRenderer implements Renderer {
 
         skijaCanvas = surface.getCanvas();
         brush = new SkijaBrush(skijaCanvas, window);
+
+        Ez2Log.info(this, "Initialized Skija");
     }
 
     @Override
@@ -175,8 +181,10 @@ public class SkijaRenderer implements Renderer {
     @Override
     public void render() {
         if (getCanvas() == null) return;
-        glfwSwapBuffers(window);
+        skijaCanvas.clear(0xFFFFFFFF);
         getCanvas().render(brush);
+        surface.flushAndSubmit();
+        glfwSwapBuffers(window);
     }
 
     @Override
@@ -196,7 +204,6 @@ public class SkijaRenderer implements Renderer {
     }
 
     @Override
-    @Nullable
     public Canvas getCanvas() {
         return canvas;
     }
