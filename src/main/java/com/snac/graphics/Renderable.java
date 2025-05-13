@@ -2,11 +2,15 @@ package com.snac.graphics;
 
 public interface Renderable {
 
-    void render(Brush<?> brush);
+    void render(Brush<?, ?> brush);
 
-    boolean visible();
+    default boolean visible() {
+        return true;
+    }
 
-    Priority priority();
+    default Priority priority() {
+        return Priority.DEFAULT;
+    }
 
     default int layer() {
         return -1;
