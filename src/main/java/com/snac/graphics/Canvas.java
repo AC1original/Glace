@@ -2,6 +2,7 @@ package com.snac.graphics;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -39,19 +40,26 @@ public abstract class Canvas {
     }
 
     public void sortRenderables() {
-        synchronized (renderables) {
-            renderables.sort((a, b) -> {
-                boolean aHasLayer = a.layer() >= 0;
-                boolean bHasLayer = b.layer() >= 0;
+        rwLock.writeLock().lock();
+        try {
+            var updated = new ArrayList<>(renderables);
+            updated.sort(Comparator.comparing(Renderable::priority));
+            updated.removeIf(r -> r.layer() >= 0);
 
-                if (aHasLayer && bHasLayer) {
-                    return Integer.compare(a.layer(), b.layer());
-                } else if (!aHasLayer && !bHasLayer) {
-                    return a.priority().compareTo(b.priority());
-                } else {
-                    return aHasLayer ? -1 : 1;
+            renderables.sort(Comparator.comparingInt(Renderable::layer));
+            for (var r : renderables) {
+                if (r.layer() >= 0) {
+                    if (updated.size() > r.layer()) {
+                        updated.add(r.layer(), r);
+                    } else {
+                        updated.add(r);
+                    }
                 }
-            });
+            }
+            renderables.clear();
+            renderables.addAll(updated);
+        } finally {
+            rwLock.writeLock().unlock();
         }
     }
 
@@ -59,17 +67,14 @@ public abstract class Canvas {
     public void render(Brush<?, ?> brush) {
         rwLock.readLock().lock();
         try {
-            var it = renderables.iterator();
-            while (it.hasNext()) {
-                var i = it.next();
-                if (i.visible()) {
-                    i.render(brush);
-                }
-            }
+            renderables.stream()
+                    .filter(Renderable::visible)
+                    .forEach(r -> r.render(brush));
         } finally {
             rwLock.readLock().unlock();
         }
     }
 
-    public static class DefaultCanvas extends Canvas {}
+    public static class DefaultCanvas extends Canvas {
+    }
 }
