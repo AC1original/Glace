@@ -16,7 +16,7 @@ public interface Brush<I, F> {
 
     void drawLine(int x1, int y1, int x2, int y2);
 
-    void drawPolygon(int[] xPoints, int[] yPoints, int nPoints, boolean filled);
+    void drawPolygon(Point[] points, boolean filled);
 
     void drawOval(int x, int y, int width, int height, boolean filled);
 
