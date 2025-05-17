@@ -51,14 +51,14 @@ public class SkijaRenderer implements Renderer {
         int[] height = new int[1];
         glfwGetFramebufferSize(window, width, height);
 
-        float[] xscale = new float[1];
-        float[] yscale = new float[1];
-        glfwGetWindowContentScale(window, xscale, yscale);
-        assert xscale[0] == yscale[0] : "Horizontal dpi=" + xscale[0] + ", vertical dpi=" + yscale[0];
+        float[] xScale = new float[1];
+        float[] yScale = new float[1];
+        glfwGetWindowContentScale(window, xScale, yScale);
+        assert xScale[0] == yScale[0] : "Horizontal dpi=" + xScale[0] + ", vertical dpi=" + yScale[0];
 
-        this.width = (int) (width[0] / xscale[0]);
-        this.height = (int) (height[0] / yscale[0]);
-        this.dpi = xscale[0];
+        this.width = (int) (width[0] / xScale[0]);
+        this.height = (int) (height[0] / yScale[0]);
+        this.dpi = xScale[0];
     }
 
     @Override
@@ -98,6 +98,7 @@ public class SkijaRenderer implements Renderer {
                 initSkija();
                 render();
             });
+            Ez2Log.info(this, "Initialized Skija");
             initSkija();
 
         }, maxFps, fps -> {
@@ -153,8 +154,6 @@ public class SkijaRenderer implements Renderer {
 
         skijaCanvas = surface.getCanvas();
         brush = new SkijaBrush(skijaCanvas, window);
-
-        Ez2Log.info(this, "Initialized Skija");
     }
 
     @Override
