@@ -1,7 +1,9 @@
 package com.snac.util;
 
 import de.snac.Ez2Log;
+import lombok.Builder;
 import lombok.Getter;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -11,19 +13,15 @@ import java.util.function.Consumer;
 public class Loop {
     private boolean running = false;
     private boolean paused = false;
-    private boolean runOnThread = false;
-    private String threadName = "";
-
+    private final boolean runOnThread;
+    private final String threadName;
     private ExecutorService executorService;
 
-    public Loop runOnThread(boolean runOnThread) {
+    @Builder
+    public Loop(boolean runOnThread, @Nullable String threadName, @Nullable ExecutorService specificExecutor) {
         this.runOnThread = runOnThread;
-        return this;
-    }
-
-    public Loop setThreadName(String name) {
-        this.threadName = name;
-        return this;
+        this.threadName = threadName == null ? "" : threadName;
+        this.executorService = specificExecutor;
     }
 
     public Loop start(final int TARGET_TPS) {
