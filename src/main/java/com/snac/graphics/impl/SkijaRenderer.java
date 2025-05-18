@@ -13,15 +13,18 @@ import org.jetbrains.annotations.NotNull;
 import static org.lwjgl.glfw.Callbacks.*;
 import static org.lwjgl.glfw.GLFW.*;
 
+import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;
+
+import java.util.concurrent.ExecutorService;
 
 @Getter
 public class SkijaRenderer implements Renderer {
     private long window = 0;
     private volatile Canvas canvas;
     private volatile boolean vsync = false;
-    private volatile int maxFps = 60;
+    private volatile int maxFps;
     private volatile int fps = 0;
     private int width;
     private int height;
@@ -31,14 +34,20 @@ public class SkijaRenderer implements Renderer {
     private BackendRenderTarget renderTarget;
     private Surface surface;
     private io.github.humbleui.skija.Canvas skijaCanvas;
+    @Nullable
+    private final ExecutorService executor;
 
     public SkijaRenderer() {
-        this(new Canvas.DefaultCanvas());
+        this(0, null, null);
     }
 
-    public SkijaRenderer(Canvas canvas) {
+    public SkijaRenderer(int maxFPS, @Nullable Canvas canvas, @Nullable ExecutorService executor) {
         GLFWErrorCallback.createPrint(System.err).set();
-        this.canvas = canvas;
+
+        this.canvas = canvas == null ? new Canvas.DefaultCanvas() : canvas;
+        this.maxFps = maxFPS <= 0 ? maxFPS : 60;
+        this.executor = executor;
+
         if (!glfwInit()) {
             throw new IllegalStateException("Unable to initialize GLFW");
         }
@@ -82,9 +91,11 @@ public class SkijaRenderer implements Renderer {
     }
 
     private synchronized void startRenderLoop() {
-        var loop = new Loop()
-                .runOnThread(true)
-                .setThreadName("Glace-Rendering");
+        var loop = Loop.builder()
+                .runOnThread(executor == null)
+                .threadName("Glace-Rendering")
+                .specificExecutor(executor)
+                .build();
 
         loop.start(() -> {
             glfwMakeContextCurrent(window);
