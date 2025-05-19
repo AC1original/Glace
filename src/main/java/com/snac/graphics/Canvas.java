@@ -8,7 +8,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Stream;
 
-public abstract class Canvas {
+public class Canvas {
     protected final List<Renderable> renderables = Collections.synchronizedList(new ArrayList<>());
     protected final ReadWriteLock rwLock = new ReentrantReadWriteLock();
 
@@ -39,7 +39,7 @@ public abstract class Canvas {
         renderables.clear();
     }
 
-    public void sortRenderables() {
+    protected void sortRenderables() {
         rwLock.writeLock().lock();
         try {
             var updated = new ArrayList<>(renderables);
@@ -73,8 +73,5 @@ public abstract class Canvas {
         } finally {
             rwLock.readLock().unlock();
         }
-    }
-
-    public static class DefaultCanvas extends Canvas {
     }
 }
