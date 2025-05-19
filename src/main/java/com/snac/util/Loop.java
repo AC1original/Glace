@@ -22,7 +22,8 @@ public class Loop {
 
     /**
      * There are two ways to create a new Loop instance:
-     * <br>1. Use this contractor
+     * <p>
+     *  1. Use this contractor
      * <br>2. Use the builder generated from lombok (thank you lombok <3) For example:
      * <pre>{@code
      * var loop = Loop.builder().runOnThread(true).build();
@@ -49,7 +50,8 @@ public class Loop {
 
     /**
      * Everything ready? To start the loop, you'll need to call this method.
-     * <br>Example how to use:
+     * <p>
+     * Example how to use:
      * <pre>{@code
      * var loop = Loop.builder().runOnThread(true).build();
      *
