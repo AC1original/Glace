@@ -45,7 +45,7 @@ public class SkijaRenderer implements Renderer {
         GLFWErrorCallback.createPrint(System.err).set();
 
         this.canvas = canvas == null ? new Canvas.DefaultCanvas() : canvas;
-        this.maxFps = maxFPS <= 0 ? maxFPS : 60;
+        this.maxFps = maxFPS <= 0 ? 60 : maxFPS;
         this.executor = executor;
 
         if (!glfwInit()) {
