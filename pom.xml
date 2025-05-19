@@ -35,7 +35,7 @@
         <dependency>
             <groupId>com.github.AC1original</groupId>
             <artifactId>Ez2log</artifactId>
-            <version>-SNAPSHOT</version>
+            <version>78dc4d0</version>
         </dependency>
 
         <dependency>
