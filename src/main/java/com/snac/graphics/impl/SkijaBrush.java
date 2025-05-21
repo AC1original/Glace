@@ -147,4 +147,8 @@ public class SkijaBrush implements Brush<Image, Font> {
         this.lineStrength = strength;
         paint.setStrokeWidth(lineStrength);
     }
+
+    public void setSmooth(boolean smooth) {
+        paint.setAntiAlias(smooth);
+    }
 }

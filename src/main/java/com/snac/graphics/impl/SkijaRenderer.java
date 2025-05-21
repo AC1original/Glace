@@ -18,6 +18,8 @@ import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;
 
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.function.Consumer;
 
 @Getter
 public class SkijaRenderer implements Renderer {
@@ -44,7 +46,7 @@ public class SkijaRenderer implements Renderer {
     public SkijaRenderer(int maxFPS, @Nullable Canvas canvas, @Nullable ExecutorService executor) {
         GLFWErrorCallback.createPrint(System.err).set();
 
-        this.canvas = canvas == null ? new Canvas.DefaultCanvas() : canvas;
+        this.canvas = canvas == null ? new Canvas() : canvas;
         this.maxFps = maxFPS <= 0 ? 60 : maxFPS;
         this.executor = executor;
 
@@ -94,47 +96,67 @@ public class SkijaRenderer implements Renderer {
         var loop = Loop.builder()
                 .runOnThread(executor == null)
                 .threadName("Glace-Rendering")
-                .specificExecutor(executor)
                 .build();
 
-        loop.start(() -> {
-            glfwMakeContextCurrent(window);
-            GL.createCapabilities();
-            glfwSwapInterval(vsync ? 1 : 0);
-            glfwShowWindow(window);
+        var initRun = new Runnable() {
+            @Override
+            public void run() {
+                glfwMakeContextCurrent(window);
+                GL.createCapabilities();
+                glfwSwapInterval(vsync ? 1 : 0);
+                glfwShowWindow(window);
 
-            context = DirectContext.makeGL();
-            glfwSetWindowSizeCallback(window, (window, width, height) -> {
-                updateDimensions();
+                context = DirectContext.makeGL();
+                glfwSetWindowSizeCallback(window, (window, width, height) -> {
+                    updateDimensions();
+                    System.out.println("Resize");
+                    initSkija();
+                    render();
+                });
+                Ez2Log.info(this, "Initialized Skija");
                 initSkija();
+            }
+        };
+
+        var renderRun = new Consumer<Integer>() {
+            @Override
+            public void accept(Integer integer) {
+                fps = integer;
                 render();
+                glfwPollEvents();
+
+                if (glfwWindowShouldClose(window)) {
+                    loop.stop();
+                    Ez2Log.info(this, "LWJGL has been terminated");
+                }
+            }
+        };
+
+        var shutdownRun = new Runnable() {
+            @Override
+            public void run() {
+                glfwFreeCallbacks(window);
+                glfwDestroyWindow(window);
+                glfwTerminate();
+                GLFWErrorCallback errorCallback = glfwSetErrorCallback(null);
+                if (errorCallback != null) errorCallback.free();
+
+                if (context != null) {
+                    context.close();
+                }
+
+                Ez2Log.info(this, "Shutting down render loop");
+            }
+        };
+
+        var exec = Executors.newSingleThreadExecutor();
+        if (!loop.isRunOnThread()) {
+            exec.execute(() -> {
+                loop.start(initRun, maxFps, renderRun, shutdownRun);
             });
-            Ez2Log.info(this, "Initialized Skija");
-            initSkija();
-
-        }, maxFps, fps -> {
-            this.fps = fps;
-
-            render();
-            glfwPollEvents();
-
-            if (glfwWindowShouldClose(window)) {
-                loop.stop();
-                Ez2Log.info(this, "LWJGL has been terminated");
-            }
-        }, () -> {
-            glfwFreeCallbacks(window);
-            glfwDestroyWindow(window);
-            glfwTerminate();
-            GLFWErrorCallback errorCallback = glfwSetErrorCallback(null);
-            if (errorCallback != null) errorCallback.free();
-
-            if (context != null) {
-                context.close();
-            }
-
-            Ez2Log.info(this, "Shutting down render loop");
-        });
+        } else {
+            loop.start(initRun, maxFps, renderRun, shutdownRun);
+        }
     }
 
     private void initSkija() {
@@ -150,9 +172,9 @@ public class SkijaRenderer implements Renderer {
         renderTarget = BackendRenderTarget.makeGL(
                 (int) (width * dpi),
                 (int) (height * dpi),
-                /*samples*/0,
-                /*stencil*/8,
-                /*fbId*/0,
+                0,
+                8,
+                0,
                 FramebufferFormat.GR_GL_RGBA8);
 
         surface = Surface.makeFromBackendRenderTarget(
