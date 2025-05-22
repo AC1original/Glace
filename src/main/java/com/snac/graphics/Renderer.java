@@ -4,8 +4,12 @@ package com.snac.graphics;
  * This interface provides the structure for a Renderer. <br>
  * A Renderer is meant to only handle one window.
  * If you want to have more windows, you need to have more Renderer(-Instances)
+ * <p>Use this interface if you want to create your own Glace-renderer.</p>
  * <p>
- * Use this interface if you want to create your own Glace-renderer.
+ *     Short explanation how rendering works here:<br>
+ *     {@link Renderer} renders the current set {@link Canvas}.
+ *     This Canvas renders every {@link Renderable} that was added to this Canvas.
+ * </p>
  */
 public interface Renderer {
 
