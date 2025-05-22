@@ -8,7 +8,7 @@ package com.snac.graphics;
  * <p>
  *     Short explanation how rendering works here:<br>
  *     {@link Renderer} renders the current set {@link Canvas}.
- *     This Canvas renders every {@link Renderable} that was added to this Canvas.
+ *     This Canvas renders every {@link Renderable} it contains.
  * </p>
  */
 public interface Renderer {
