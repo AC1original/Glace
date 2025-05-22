@@ -1,21 +1,68 @@
 package com.snac.graphics;
 
+/**
+ * This interface is for everything that needs to be drawn to screen.
+ * Renderable-Objects can be added to any {@link Canvas}-instance.
+ * <p>
+ *     For example, any entity can implement this interface and added to an active canvas from any renderer
+ *     and gets automatically drawn every frame
+ * </p>
+ * Also see {@link Renderer}
+ */
 public interface Renderable {
 
+    /**
+     * This method is called every frame.
+     * Use the {@link Brush} instance to draw content.<br>
+     * The frame rate depends on the one set for the renderer
+     * that renders the canvas this {@code Renderable} was added to (by default 60 FPS).
+     * <p>
+     *     It is not recommended to use this method for calculations or any non-rendering logic.
+     * </p>
+     * As this is the only required method, you can implement this interface directly using a lambda. You're welcome :)
+     * <br><br>Not working? Please check:
+     * <br>1. This renderable got added to any {@link Canvas}
+     * <br>2. The used {@link Canvas} is the current one set by the {@link Renderer} you want to render this on.
+     * <br>3. The used {@link Renderer} is running (Window got created, render loop is running)
+     * @param brush The brush used for rendering. See the {@link Brush} class for more information.
+     */
     void render(Brush<?, ?> brush);
 
+    /**
+     * By overriding this method, you can decide if this Renderable is hidden or drawn.<br>
+     * The renderable doesn't get removed from the {@link Canvas} by setting this to {@code false}
+     * @return {@code true} to draw this renderable, {@code false} to hide it
+     */
     default boolean visible() {
         return true;
     }
 
+    /**
+     * Sets the {@link Priority Priority} of this renderable.
+     * To change the order specific renderables get drawn (foreground, background, ...).<br>
+     * For example, HUD elements can be set to {@code HIGH}, background to {@code LOW}, menus to {@code HIGHEST}
+     * <br>Confused? Just don't override this method or set it to {@code DEFAULT}.
+     * @return the priority you want to set this Renderable to
+     */
     default Priority priority() {
         return Priority.DEFAULT;
     }
 
+    /**
+     * To set the specific layer, this renderable should get drawn to.
+     * By returning 0 or higher your drawable is set to the specific layer
+     * and {@link #priority()} gets ignored.<br>
+     * For example, By setting this to {@code 0} this drawable is the first getting rendered. Everything else gets rendered after (above)
+     * @return {@code -1} or lower to disable this function and use the set {@link Priority Priority},
+     * {@code 0 or higher} the renderable is set to the specific layer.
+     */
     default int layer() {
         return -1;
     }
 
+    /**
+     * Possible Priorities Renderables can be set to. See {@link #priority()} for more information
+     */
     enum Priority {
         LOWEST,
         LOW,
@@ -23,17 +70,12 @@ public interface Renderable {
         HIGH,
         HIGHEST;
 
+        /**
+         * @param priority The priority you want to know if it's lower.
+         * @return {@code true} if the parameter priority is higher, {@code false} if the parameter priority is lower
+         */
         public boolean isHigherThan(Priority priority) {
-            return indexOf(this) > indexOf(priority);
-        }
-
-        private int indexOf(Priority priority) {
-            for (int i = 0; i < Priority.values().length; i++) {
-                if (Priority.values()[i].equals(priority)) {
-                    return i;
-                }
-            }
-            return 0;
+            return this.compareTo(priority) > 0;
         }
     }
 }
