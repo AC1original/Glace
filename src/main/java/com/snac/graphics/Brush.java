@@ -29,4 +29,7 @@ public interface Brush<I, F> {
 
     void drawPixels(Point[] locations);
     void drawPixels(Point[] locations, int[] colors);
+
+    float getSize();
+    void setSize(float size);
 }

@@ -20,7 +20,7 @@ public class SkijaBrush implements Brush<Image, Font> {
     private final Paint paint;
     private Font font = new Font(Typeface.makeDefault(), 12);
     private final Rect iRect = new Rect(0, 0, 0, 0);
-    private float lineStrength = 1f;
+    private float size = 1f;
     private Color color = Color.BLACK;
 
     public SkijaBrush(Canvas skijaCanvas, long window) {
@@ -143,9 +143,15 @@ public class SkijaBrush implements Brush<Image, Font> {
         }
     }
 
-    public void setLineStrength(float strength) {
-        this.lineStrength = strength;
-        paint.setStrokeWidth(lineStrength);
+    @Override
+    public float getSize() {
+        return size;
+    }
+
+    @Override
+    public void setSize(float size) {
+        this.size = size;
+        paint.setStrokeWidth(size);
     }
 
     public void setSmooth(boolean smooth) {

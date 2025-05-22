@@ -92,7 +92,7 @@ public class SkijaRenderer implements Renderer {
         startRenderLoop();
     }
 
-    private synchronized void startRenderLoop() {
+    private void startRenderLoop() {
         var loop = Loop.builder()
                 .runOnThread(executor == null)
                 .threadName("Glace-Rendering")
@@ -211,7 +211,7 @@ public class SkijaRenderer implements Renderer {
 
 
     @Override
-    public void render() {
+    public synchronized void render() {
         if (getCanvas() == null) return;
         skijaCanvas.clear(0xFFFFFFFF);
         getCanvas().render(brush);
