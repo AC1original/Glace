@@ -21,6 +21,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 
+/**
+ * Implementation of {@link Renderer} based on Skija and LWJGL. See {@link Renderer}-Interface for more information.
+ */
 @Getter
 public class SkijaRenderer implements Renderer {
     private long window = 0;
@@ -39,10 +42,21 @@ public class SkijaRenderer implements Renderer {
     @Nullable
     private final ExecutorService executor;
 
+    /**
+     * Empty constructor. Creates a new SkijaRenderer instance with default values
+     */
     public SkijaRenderer() {
-        this(0, null, null);
+        this(-1, null, Executors.newSingleThreadExecutor());
     }
 
+    /**
+     * Constructor... You know how those work - at least I hope so
+     * @param maxFPS The maximum FPS the renderer should render on
+     * @param canvas Sets the {@link Canvas}. By setting this to {@code null} a new {@link Canvas} will be created
+     * @param executor The executor this renderer should run on.
+     *                 By setting this to {@code null} this renderer will use the thread the window is created on for the render-loop,
+     *                 which is not recommended as this will block the entire thread.
+     */
     public SkijaRenderer(int maxFPS, @Nullable Canvas canvas, @Nullable ExecutorService executor) {
         GLFWErrorCallback.createPrint(System.err).set();
 
@@ -72,6 +86,10 @@ public class SkijaRenderer implements Renderer {
         this.dpi = xScale[0];
     }
 
+    /**
+     * Will automatically start the render-loop.
+     * <p>See {@link Renderer#createWindow(int, int, String)} for more information</p>
+     */
     @Override
     public void createWindow(int width, int height, @NotNull String title) {
         if (window != 0) {
@@ -189,16 +207,25 @@ public class SkijaRenderer implements Renderer {
         brush = new SkijaBrush(skijaCanvas, window);
     }
 
+    /**
+     * See {@link Renderer#moveWindow(int, int)}
+     */
     @Override
     public void moveWindow(int x, int y) {
         glfwSetWindowPos(window, x, y);
     }
 
+    /**
+     * See {@link Renderer#resizeWindow(int, int)}
+     */
     @Override
     public void resizeWindow(int width, int height) {
         glfwSetWindowSize(window, width, height);
     }
 
+    /**
+     * See {@link Renderer#destroyWindow()}
+     */
     @Override
     public void destroyWindow() {
         if (window == 0) {
@@ -209,7 +236,9 @@ public class SkijaRenderer implements Renderer {
         window = 0;
     }
 
-
+    /**
+     * See {@link Renderer#render()}
+     */
     @Override
     public synchronized void render() {
         if (getCanvas() == null) return;
@@ -219,37 +248,58 @@ public class SkijaRenderer implements Renderer {
         glfwSwapBuffers(window);
     }
 
+    /**
+     * See {@link Renderer#setVSync(boolean)}
+     */
     @Override
     public void setVSync(boolean vsync) {
         this.vsync = vsync;
         glfwSwapInterval(vsync ? 1 : 0);
     }
 
+    /**
+     * See {@link Renderer#isVSync()}
+     */
     @Override
     public boolean isVSync() {
         return vsync;
     }
 
+    /**
+     * See {@link Renderer#setCanvas(Canvas)}
+     */
     @Override
     public void setCanvas(Canvas canvas) {
         this.canvas = canvas;
     }
 
+    /**
+     * See {@link Renderer#getCanvas()}
+     */
     @Override
     public Canvas getCanvas() {
         return canvas;
     }
 
+    /**
+     * See {@link Renderer#getMaxFPS()}
+     */
     @Override
     public int getMaxFPS() {
         return maxFps;
     }
 
+    /**
+     * See {@link Renderer#setMaxFPS(int)}
+     */
     @Override
     public void setMaxFPS(int fps) {
         this.maxFps = fps;
     }
 
+    /**
+     * See {@link Renderer#getFPS()}
+     */
     @Override
     public int getFPS() {
         return fps;
