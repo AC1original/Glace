@@ -154,6 +154,11 @@ public class SkijaBrush implements Brush<Image, Font> {
         paint.setStrokeWidth(size);
     }
 
+    @Override
+    public void reset() {
+        paint.reset();
+    }
+
     public void setSmooth(boolean smooth) {
         paint.setAntiAlias(smooth);
     }

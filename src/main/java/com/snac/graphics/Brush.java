@@ -32,4 +32,6 @@ public interface Brush<I, F> {
 
     float getSize();
     void setSize(float size);
+
+    void reset();
 }
