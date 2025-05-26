@@ -34,7 +34,7 @@ public class Loop {
      * @param threadName Sets the name for the generated thread. This only makes sense if runOnThread-parameter is set to {@code true}
      */
     @Builder
-    public Loop(boolean runOnThread, @Nullable String threadName) {
+    private Loop(boolean runOnThread, @Nullable String threadName) {
         this.runOnThread = runOnThread;
         this.threadName = threadName == null ? "" : threadName;
     }
