@@ -13,6 +13,12 @@ import lombok.Getter;
 import java.awt.*;
 import java.awt.Color;
 
+/**
+ * Implementation of {@link Brush}. This Brush is for {@link com.snac.graphics.Renderer Renderer} based on Skija.<br>
+ * Since an instance of this class is created by the renderer being used
+ * and managed together with its {@link com.snac.graphics.Canvas Canvas},
+ * you normally don't need to create an instance yourself - unless you're writing your own renderer.
+ */
 @Getter
 public class SkijaBrush implements Brush<Image, Font> {
     private final Canvas skijaCanvas;
@@ -23,23 +29,42 @@ public class SkijaBrush implements Brush<Image, Font> {
     private float size = 1f;
     private Color color = Color.BLACK;
 
+    /**
+     * As said before: Since an instance of this class is created by the renderer being used
+     * and managed together with its {@link com.snac.graphics.Canvas},
+     * you normally don't need to create an instance yourself - unless you're writing your own renderer.
+     * @param skijaCanvas Don't get confused.
+     *                    To draw with Skija, you need a {@link Canvas}.
+     *                    This {@link Canvas} is mainly for internal use
+     *                    and has nothing to do with the {@link com.snac.graphics.Canvas} from Glace
+     * @param window The window this brush should draw on
+     */
     public SkijaBrush(Canvas skijaCanvas, long window) {
         this.skijaCanvas = skijaCanvas;
         this.window = window;
         this.paint = new Paint();
     }
 
+    /**
+     * See {@link Brush#setFont(Object)}
+     */
     @Override
     public void setFont(Font font) {
         this.font = font;
     }
 
+    /**
+     * See {@link Brush#setColor(Color)}
+     */
     @Override
     public void setColor(Color color) {
         this.paint.setColor(color.getRGB());
         this.color = color;
     }
 
+    /**
+     * See {@link Brush#drawRectangle(int, int, int, int, boolean)}
+     */
     @Override
     public void drawRectangle(int x, int y, int width, int height, boolean filled) {
         paint.setStroke(!filled);
@@ -47,26 +72,44 @@ public class SkijaBrush implements Brush<Image, Font> {
         skijaCanvas.drawRect(rect, paint);
     }
 
+    /**
+     * See {@link Brush#drawImage(Object, int, int, int, int)}
+     */
     @Override
     public void drawImage(Image image, int x, int y, int width, int height) {
         skijaCanvas.drawImageRect(image, Rect.makeXYWH(x, y, width, height));
     }
 
+    /**
+     * See {@link Brush#drawArc(int, int, int, int, int, int, boolean)}
+     */
     @Override
     public void drawArc(int x, int y, int width, int height, int startAngle, int arcAngle, boolean filled) {
         drawArc(x, y, width, height, startAngle, arcAngle, filled, false);
     }
 
+    /**
+     * Almost the same as {@link #drawArc(int, int, int, int, int, int, boolean)}, just one more parameter
+     * @param includeCenter I don't exactly know what it does, sorry.
+     *                      Maybe you can find something in the <a href="https://github.com/HumbleUI/Skija/tree/master/docs">Skija Docs</a>
+     *                      Or just test it out
+     */
     public void drawArc(int x, int y, int width, int height, int startAngle, int arcAngle, boolean filled, boolean includeCenter) {
         paint.setStroke(!filled);
         skijaCanvas.drawArc(x, y, x + width, y +height, startAngle, arcAngle, includeCenter, paint);
     }
 
+    /**
+     * See {@link Brush#drawLine(int, int, int, int)}
+     */
     @Override
     public void drawLine(int x1, int y1, int x2, int y2) {
         skijaCanvas.drawLine(x1, y1, x2, y2, paint);
     }
 
+    /**
+     * See {@link Brush#drawPolygon(Point[], boolean)}
+     */
     @Override
     public void drawPolygon(Point[] points,  boolean filled) {
         paint.setStroke(!filled);
@@ -83,18 +126,27 @@ public class SkijaBrush implements Brush<Image, Font> {
         skijaCanvas.drawPath(path, paint);
     }
 
+    /**
+     * See {@link Brush#drawOval(int, int, int, int, boolean)}
+     */
     @Override
     public void drawOval(int x, int y, int width, int height, boolean filled) {
         paint.setStroke(!filled);
         skijaCanvas.drawOval(Rect.makeXYWH(x, y, width, height), paint);
     }
 
+    /**
+     * See {@link Brush#drawRoundRect(int, int, int, int, int, int, boolean)}
+     */
     @Override
     public void drawRoundRect(int x, int y, int width, int height, int arcWidth, int arcHeight, boolean filled) {
         paint.setStroke(!filled);
         skijaCanvas.drawRRect(RRect.makeXYWH(x, y, width, height, arcWidth, arcHeight), paint);
     }
 
+    /**
+     * See {@link Brush#drawText(String, int, int)}
+     */
     @Override
     public void drawText(String text, int x, int y) {
         short[] glyphs = font.getStringGlyphs(text);
@@ -111,6 +163,9 @@ public class SkijaBrush implements Brush<Image, Font> {
         skijaCanvas.drawTextBlob(blob, 0, 0, paint);
     }
 
+    /**
+     * See {@link Brush#drawPixel(int, int)}
+     */
     @Override
     public void drawPixel(int x, int y) {
         paint.setAntiAlias(false);
@@ -118,11 +173,17 @@ public class SkijaBrush implements Brush<Image, Font> {
         paint.setAntiAlias(true);
     }
 
+    /**
+     * See {@link Brush#drawPixel(Point)}
+     */
     @Override
     public void drawPixel(Point location) {
         drawPixel(location.x, location.y);
     }
 
+    /**
+     * See {@link Brush#drawPixels(Point[])} )}
+     */
     @Override
     public void drawPixels(Point[] locations) {
         for (var loc : locations) {
@@ -130,6 +191,9 @@ public class SkijaBrush implements Brush<Image, Font> {
         }
     }
 
+    /**
+     * See {@link Brush#drawPixels(Point[], int[])}
+     */
     @Override
     public void drawPixels(Point[] locations, int[] colors) {
         for (int i = 0; i < locations.length; i++) {
@@ -143,23 +207,35 @@ public class SkijaBrush implements Brush<Image, Font> {
         }
     }
 
+    /**
+     * See {@link Brush#getSize()}
+     */
     @Override
     public float getSize() {
         return size;
     }
 
+    /**
+     * See {@link Brush#setSize(float)}
+     */
     @Override
     public void setSize(float size) {
         this.size = size;
         paint.setStrokeWidth(size);
     }
 
+    /**
+     * See {@link Brush#reset()}
+     */
     @Override
     public void reset() {
         paint.reset();
     }
 
-    public void setSmooth(boolean smooth) {
-        paint.setAntiAlias(smooth);
+    /**
+     * Enables or disables antialiasing during rendering.
+     */
+    public void setAntiAliasing(boolean antiAlias) {
+        paint.setAntiAlias(antiAlias);
     }
 }
