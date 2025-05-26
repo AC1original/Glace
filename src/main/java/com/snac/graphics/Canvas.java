@@ -17,7 +17,7 @@ import java.util.stream.Stream;
  * <p>
  *     The {@link Renderer} will render every {@link Renderable} added to its current Canvas.
  * </p>
- * Also see {@link Renderable} and {@link Renderable} for more information.
+ * Also see {@link Renderer} and {@link Renderable} for more information.
  */
 public class Canvas {
     protected final List<Renderable> renderables = Collections.synchronizedList(new ArrayList<>());
