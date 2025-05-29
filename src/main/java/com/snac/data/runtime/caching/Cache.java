@@ -321,8 +321,12 @@ public class Cache<T> {
         }
     }
 
+    /**
+     * This class stores any relevant data for cached objects. It is for internal use in Caches
+     * @param <T> The type of the object the class instance stores
+     */
     @Getter
-    protected static class CachedObject<T> {
+    public static class CachedObject<T> {
         protected final String key;
         @Getter(AccessLevel.NONE)
         protected final T object;
@@ -330,6 +334,11 @@ public class Cache<T> {
         protected long lastUpdated;
         protected boolean expired;
 
+        /**
+         * This class is for internal use only. You don't need to create instances except you're building a cache class by your own
+         * @param key The key of the stored object
+         * @param object The object to store
+         */
         protected CachedObject(final String key, final T object) {
             this.key = key;
             this.object = object;
@@ -337,12 +346,18 @@ public class Cache<T> {
             this.lastUpdated = timeAdded;
         }
 
-        public T getObject() {
+        /**
+         * @return The object stored and sets the {@link #lastUpdated} time to the current time.
+         */
+        protected T getObject() {
             this.lastUpdated = System.currentTimeMillis();
             return object;
         }
 
-        public void expire() {
+        /**
+         * By calling this, the stored object will count as expired and will maybe be deleted by the cache stored in.
+         */
+        protected void expire() {
             expired = true;
         }
 
