@@ -24,7 +24,7 @@ import java.util.stream.Stream;
  * Example how to use:
  * <pre>{@code
  *         Cache<Image> imageCache = new Cache.CacheBuilder<Image>()
- *                 .objectsExpire(true)
+ *                 .objectsExpireAfterTime(true)
  *                 .objectsExpireAfter(5, TimeUnit.MINUTES)
  *                 .deleteObjectsWhenExpired(true)
  *                 .build();
@@ -34,47 +34,48 @@ import java.util.stream.Stream;
  *         Image playerIdle = imageCache.get("player_idle_image");
  * }</pre>
  *
- * @param <T> the type of objects to be stored in the cache
+ * @param <T> The type of objects to be stored in the cache
  */
 @Getter
 public class Cache<T> {
     protected final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
     protected final LinkedHashSet<CachedObject<T>> cached = new LinkedHashSet<>();
     protected final List<CacheListener> listeners = Collections.synchronizedList(new ArrayList<>());
-    protected final boolean expires;
+    protected final boolean temporalExpiration;
     protected final int expiresAfter;
     protected final TimeUnit expireTimeUnit;
     protected final boolean deleteAfterExpiration;
-    protected final boolean onlyExpireWhenUnused;
-    protected final boolean deleteOldIndexes;
-    protected final int deleteIndexAfter;
+    protected final boolean temporalExpirationOnlyWhenUnused;
+    protected final boolean oldIndexesExpire;
+    protected final int indexExpireAfter;
 
     /**
      * Creates a new cache instance.
      * <p>
      * Please use {@link CacheBuilder} for constructing cache instances.
      *
-     * @param expires Whether cached objects should expire automatically
-     * @param expiresAfter The duration after which an object may expire
-     * @param expireTimeUnit The time unit corresponding to {@code expiresAfter}
-     * @param deleteAfterExpiration Whether expired objects should be automatically removed from the cache
-     * @param onlyExpireWhenUnused If true, the expiration time is dependent on the last time the object got used instead of the time it got added
-     * @param deleteOldIndexes Whether entries with outdated indices should be removed
-     * @param deleteIndexAfter The index threshold after which old entries should be deleted
+     * @param temporalExpiration               Whether cached objects should expire automatically after the time set by {@code expiresAfter} and {@code expireTimeUnit}
+     * @param expiresAfter                     The duration after which an object may expire
+     * @param expireTimeUnit                   The time unit corresponding to {@code expiresAfter}
+     * @param deleteAfterExpiration            Whether expired objects should be automatically removed from the cache
+     * @param temporalExpirationOnlyWhenUnused If true, the expiration time is dependent on the last time the object got used instead of the time it got added
+     * @param oldIndexExpire                   Whether entries with outdated indexes should expire
+     * @param indexExpireAfter                 The index threshold after which old entries should expire
      */
-    protected Cache(boolean expires, int expiresAfter, TimeUnit expireTimeUnit, boolean deleteAfterExpiration,
-                  boolean onlyExpireWhenUnused, boolean deleteOldIndexes, int deleteIndexAfter) {
-        this.expires = expires;
+    protected Cache(boolean temporalExpiration, int expiresAfter, TimeUnit expireTimeUnit, boolean deleteAfterExpiration,
+                    boolean temporalExpirationOnlyWhenUnused, boolean oldIndexExpire, int indexExpireAfter) {
+        this.temporalExpiration = temporalExpiration;
         this.expiresAfter = expiresAfter;
         this.expireTimeUnit = expireTimeUnit;
         this.deleteAfterExpiration = deleteAfterExpiration;
-        this.onlyExpireWhenUnused = onlyExpireWhenUnused;
-        this.deleteOldIndexes = deleteOldIndexes;
-        this.deleteIndexAfter = deleteIndexAfter;
+        this.temporalExpirationOnlyWhenUnused = temporalExpirationOnlyWhenUnused;
+        this.oldIndexesExpire = oldIndexExpire;
+        this.indexExpireAfter = indexExpireAfter;
     }
 
     /**
      * Used to register a {@link CacheListener} for this cache.
+     *
      * @param listener The {@link CacheListener} to register
      */
     public void register(CacheListener listener) {
@@ -83,6 +84,7 @@ public class Cache<T> {
 
     /**
      * Used to remove a {@link CacheListener} from this cache.
+     *
      * @param listener The {@link CacheListener} to remove
      */
     public void unregister(CacheListener listener) {
@@ -97,11 +99,11 @@ public class Cache<T> {
      * if an object expires via {@link CacheListener#onCachedObjectExpire(CachedObject)}
      */
     protected void tick() {
-        if (isExpires()) {
+        if (isTemporalExpiration()) {
             lock.readLock().lock();
             try {
                 cached.stream().filter(CachedObject::isExpired)
-                        .filter(obj -> (System.currentTimeMillis() - (isOnlyExpireWhenUnused() ? obj.getLastUpdated() : obj.getTimeAdded()))
+                        .filter(obj -> (System.currentTimeMillis() - (isTemporalExpirationOnlyWhenUnused() ? obj.getLastUpdated() : obj.getTimeAdded()))
                                 >= getExpireTimeUnit().toMillis(getExpiresAfter()))
                         .forEach(obj -> {
                             listeners.forEach(lstnr -> lstnr.onCachedObjectExpire(obj));
@@ -122,10 +124,12 @@ public class Cache<T> {
             }
         }
 
-        if (isDeleteOldIndexes() && cached.size() > getDeleteIndexAfter()) {
+        if (isOldIndexesExpire() && cached.size() > getIndexExpireAfter()) {
             var it = cached.iterator();
-            if (it.hasNext()) {
-                remove(it.next());
+            while (cached.size() > getIndexExpireAfter()) {
+                if (it.hasNext()) {
+                    it.next().expire();
+                }
             }
         }
     }
@@ -136,7 +140,8 @@ public class Cache<T> {
      * All registered {@link CacheListener} will be notified
      * if an object is getting added via {@link CacheListener#onCachedObjectAdd(CachedObject)}
      * </p>
-     * @param key The unique key the object gets saved on. If the key isn't unique, objects with the same key will be overridden
+     *
+     * @param key    The unique key the object gets saved on. If the key isn't unique, objects with the same key will be overridden
      * @param object The object you want to add
      */
     public void add(String key, T object) {
@@ -152,6 +157,7 @@ public class Cache<T> {
 
     /**
      * Get a cached object from its key.
+     *
      * @param key The key of the object
      * @return {@code null} if this key/object doesn't exist, otherwise the object of the key
      */
@@ -170,6 +176,7 @@ public class Cache<T> {
 
     /**
      * Get a key based on the object of this key.
+     *
      * @param object The object you want to know the key from
      * @return {@code null} if this object doesn't exist, otherwise the key of the object
      */
@@ -188,6 +195,7 @@ public class Cache<T> {
 
     /**
      * Checks if the cache contains a specific object.
+     *
      * @param object The object to check if it exists
      * @return {@code true} if the object is in the cache, otherwise {@code false}
      */
@@ -197,6 +205,7 @@ public class Cache<T> {
 
     /**
      * Checks if the cache contains a specific key.
+     *
      * @param key The key to check if it exists
      * @return {@code true} if the key is in the cache, otherwise {@code false}
      */
@@ -206,6 +215,7 @@ public class Cache<T> {
 
     /**
      * Checks if the cache contains a specific {@link CachedObject}
+     *
      * @param cObject The {@link CachedObject} to check if it exists
      * @return {@code true} if the {@link CachedObject} is in the cache, otherwise {@code false}
      */
@@ -219,6 +229,7 @@ public class Cache<T> {
      * All registered {@link CacheListener} will be notified
      * if an object is getting removed via {@link CacheListener#onCachedObjectRemove(CachedObject)}
      * </p>
+     *
      * @param key The key of the object to be removed from the cache
      */
     public void remove(String key) {
@@ -240,6 +251,7 @@ public class Cache<T> {
      * All registered {@link CacheListener} will be notified
      * if an object is getting removed via {@link CacheListener#onCachedObjectRemove(CachedObject)}
      * </p>
+     *
      * @param object The object to be removed from the cache
      */
     public void remove(T object) {
@@ -259,6 +271,7 @@ public class Cache<T> {
      * All registered {@link CacheListener} will be notified
      * if an {@link CachedObject} is getting removed via {@link CacheListener#onCachedObjectRemove(CachedObject)}
      * </p>
+     *
      * @param cObject The {@link CachedObject} to be removed from the cache
      */
     public void remove(CachedObject<?> cObject) {
@@ -281,21 +294,16 @@ public class Cache<T> {
      * <h3>Important Notes:</h3>
      * <ul>
      *   <li>
-     *     The returned {@link CachedObject} instances are the actual cache entries,
-     *     not copies.
-     *     Therefore, manual modifications — such as calling {@link CachedObject#expire()} —
-     *     are strongly discouraged as they directly affect the cache.
-     *   </li>
-     *   <li>
      *     Accessing the cached object via {@link CachedObject#getObject()} updates its
      *     last usage timestamp.
      *     This may prevent expiration if the cache is configured
-     *     via {@link CacheBuilder#objectsOnlyExpireWhenUnused(boolean)} to keep recently used entries.
+     *     via {@link CacheBuilder#temporalExpirationOnlyWhenUnused(boolean)} to keep recently used entries.
      *   </li>
      *   <li>
      *     The returned stream is based on a snapshot copy of the current cache contents.
-     *     Subsequent modifications to the cache will not affect the stream.
+     *     Later modifications to the cache will not affect the stream.
      *   </li>
+     *   <li>Also see {@link CachedObject} for more information</li>
      * </ul>
      *
      * @return A snapshot stream of currently cached {@link CachedObject} entries
@@ -322,21 +330,28 @@ public class Cache<T> {
     }
 
     /**
-     * This class stores any relevant data for cached objects. It is for internal use in Caches
+     * This class stores any relevant data for cached objects. It is for internal use in Caches.
+     * <p>
+     * If you want to access the stored object without possible impacts on the cache functionality,
+     * you should access the stored object via the {@link #object public variable} instead of the getter.
+     * For example when using {@link Cache#stream()}
+     * </p>
+     *
      * @param <T> The type of the object the class instance stores
      */
     @Getter
     public static class CachedObject<T> {
         protected final String key;
         @Getter(AccessLevel.NONE)
-        protected final T object;
+        public final T object;
         protected final long timeAdded;
         protected long lastUpdated;
         protected boolean expired;
 
         /**
          * This class is for internal use only. You don't need to create instances except you're building a cache class by your own
-         * @param key The key of the stored object
+         *
+         * @param key    The key of the stored object
          * @param object The object to store
          */
         protected CachedObject(final String key, final T object) {
@@ -347,9 +362,9 @@ public class Cache<T> {
         }
 
         /**
-         * @return The object stored and sets the {@link #lastUpdated} time to the current time.
+         * @return The object stored and set the {@link #lastUpdated} time to the current time.
          */
-        protected T getObject() {
+        public T getObject() {
             this.lastUpdated = System.currentTimeMillis();
             return object;
         }
@@ -361,6 +376,9 @@ public class Cache<T> {
             expired = true;
         }
 
+        /**
+         * See {@link Object#toString()}
+         */
         @Override
         public String toString() {
             return "CachedObject{" +
@@ -373,20 +391,30 @@ public class Cache<T> {
         }
     }
 
+    /**
+     * This class is to build a {@link Cache} instance.
+     *
+     * @param <T> The type of objects to be stored in the cache
+     */
     public static class CacheBuilder<T> {
         protected static final Set<Cache<?>> caches = Collections.synchronizedSet(new HashSet<>());
-        protected boolean expires = false;
+        protected boolean temporalExpiration = false;
         protected int expiresAfter = 1;
         protected TimeUnit expireTimeUnit = TimeUnit.MINUTES;
         protected boolean deleteAfterExpiration = false;
-        protected boolean onlyExpireWhenUnused = false;
-        protected boolean deleteOldIndexes = false;
-        protected int deleteIndexAfter = 100;
+        protected boolean temporalExpirationOnlyWhenUnused = false;
+        protected boolean oldIndexesExpire = false;
+        protected int indexExpireAfter = 100;
 
         static {
             tick();
         }
 
+        /**
+         * This method is called once by a static initializer block to initialize the loop
+         * and uses the {@link Loop} class to tick every created cache 20-times a second.
+         * This is necessary to provide full cache functionality.
+         */
         protected static void tick() {
             Loop.builder()
                     .runOnThread(true)
@@ -399,39 +427,87 @@ public class Cache<T> {
                     });
         }
 
-        public CacheBuilder<T> objectsExpire(final boolean expires) {
-            this.expires = expires;
+//             * @param expires Whether cached objects should expire automatically
+//     * @param expiresAfter The duration after which an object may expire
+//     * @param expireTimeUnit The time unit corresponding to {@code expiresAfter}
+//     * @param deleteAfterExpiration Whether expired objects should be automatically removed from the cache
+//     * @param onlyExpireWhenUnused If true, the expiration time is dependent on the last time the object got used instead of the time it got added
+//     * @param deleteOldIndexes Whether entries with outdated indexes should be removed
+//     * @param deleteIndexAfter The index threshold after which old entries should be deleted
+
+        /**
+         * @param temporalExpiration {@code true} to allow cached objects
+         *                           to expire automatically after some time set by {@link #objectsExpireAfter(int, TimeUnit)}
+         */
+        public CacheBuilder<T> objectsExpireAfterTime(final boolean temporalExpiration) {
+            this.temporalExpiration = temporalExpiration;
             return this;
         }
 
+        /**
+         * Sets the time objects should expire automatically.
+         * Useless if {@link #objectsExpireAfterTime(boolean)} was set to {@code false}
+         *
+         * @param expiresAfter   The duration after which an object may expire
+         * @param expireTimeUnit The time unit corresponding to {@code expiresAfter}
+         */
         public CacheBuilder<T> objectsExpireAfter(final int expiresAfter, final TimeUnit expireTimeUnit) {
             this.expiresAfter = expiresAfter;
             this.expireTimeUnit = expireTimeUnit;
             return this;
         }
 
+        /**
+         * Whether expired objects should be automatically removed from the cache.
+         *
+         * @param deleteAfterExpiration Set to {@code true} expired objects will be deleted automatically
+         */
         public CacheBuilder<T> deleteObjectsWhenExpired(final boolean deleteAfterExpiration) {
             this.deleteAfterExpiration = deleteAfterExpiration;
             return this;
         }
 
-        public CacheBuilder<T> objectsOnlyExpireWhenUnused(final boolean onlyExpireWhenUnused) {
-            this.onlyExpireWhenUnused = onlyExpireWhenUnused;
+        /**
+         * @param temporalExpirationOnlyWhenUnused If {@code true},
+         *                                         the expiration time is dependent on the last time the object got used instead of the time it got added.
+         *                                         Also see {@link Cache#stream()} and {@link CachedObject} for more useful information related
+         *                                         when objects count as used.
+         *                                         <br>Useless if {@link #objectsExpireAfterTime(boolean)} was set to {@code false}
+         */
+        public CacheBuilder<T> temporalExpirationOnlyWhenUnused(final boolean temporalExpirationOnlyWhenUnused) {
+            this.temporalExpirationOnlyWhenUnused = temporalExpirationOnlyWhenUnused;
             return this;
         }
 
-        public CacheBuilder<T> deleteOldIndexes(final boolean deleteOldIndexes) {
-            this.deleteOldIndexes = deleteOldIndexes;
+        /**
+         * Whether entries with outdated indexes should expire
+         *
+         * @param oldIndexesExpire If set to {@code true} indexes older than the value set by {@link #indexExpireAfterIndex(int)} will expire automatically
+         */
+        public CacheBuilder<T> oldIndexesExpire(final boolean oldIndexesExpire) {
+            this.oldIndexesExpire = oldIndexesExpire;
             return this;
         }
 
-        public CacheBuilder<T> deleteIndexAfter(final int deleteIndexAfter) {
-            this.deleteIndexAfter = deleteIndexAfter;
+        /**
+         * See {@link #oldIndexesExpire(boolean)}
+         */
+        public CacheBuilder<T> indexExpireAfterIndex(final int indexExpireAfter) {
+            this.indexExpireAfter = indexExpireAfter;
             return this;
         }
 
+        /**
+         * @return The {@link Cache} instance you build with this Builder.
+         */
         public final Cache<T> build() {
-            Cache<T> cache = new Cache<T>(expires, expiresAfter, expireTimeUnit, deleteAfterExpiration, onlyExpireWhenUnused, deleteOldIndexes, deleteIndexAfter);
+            Cache<T> cache = new Cache<T>(temporalExpiration,
+                    expiresAfter,
+                    expireTimeUnit,
+                    deleteAfterExpiration,
+                    temporalExpirationOnlyWhenUnused,
+                    oldIndexesExpire,
+                    indexExpireAfter);
             caches.add(cache);
             Ez2Log.info(cache, "Initialized new cache");
             return cache;
