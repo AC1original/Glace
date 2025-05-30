@@ -427,14 +427,6 @@ public class Cache<T> {
                     });
         }
 
-//             * @param expires Whether cached objects should expire automatically
-//     * @param expiresAfter The duration after which an object may expire
-//     * @param expireTimeUnit The time unit corresponding to {@code expiresAfter}
-//     * @param deleteAfterExpiration Whether expired objects should be automatically removed from the cache
-//     * @param onlyExpireWhenUnused If true, the expiration time is dependent on the last time the object got used instead of the time it got added
-//     * @param deleteOldIndexes Whether entries with outdated indexes should be removed
-//     * @param deleteIndexAfter The index threshold after which old entries should be deleted
-
         /**
          * @param temporalExpiration {@code true} to allow cached objects
          *                           to expire automatically after some time set by {@link #objectsExpireAfter(int, TimeUnit)}
