@@ -10,6 +10,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -24,7 +25,6 @@ import java.util.stream.Stream;
  * Example how to use:
  * <pre>{@code
  *         Cache<Image> imageCache = new Cache.CacheBuilder<Image>()
- *                 .objectsExpireAfterTime(true)
  *                 .objectsExpireAfter(5, TimeUnit.MINUTES)
  *                 .deleteObjectsWhenExpired(true)
  *                 .build();
@@ -41,7 +41,6 @@ public class Cache<T> {
     protected final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
     protected final LinkedHashSet<CachedObject<T>> cached = new LinkedHashSet<>();
     protected final List<CacheListener> listeners = Collections.synchronizedList(new ArrayList<>());
-    protected final boolean temporalExpiration;
     protected final int expiresAfter;
     protected final TimeUnit expireTimeUnit;
     protected final boolean deleteAfterExpiration;
@@ -54,17 +53,15 @@ public class Cache<T> {
      * <p>
      * Please use {@link CacheBuilder} for constructing cache instances.
      *
-     * @param temporalExpiration               Whether cached objects should expire automatically after the time set by {@code expiresAfter} and {@code expireTimeUnit}
-     * @param expiresAfter                     The duration after which an object may expire
+     * @param expiresAfter                     The duration after which an object will expire. Disable with values like 0 or lower
      * @param expireTimeUnit                   The time unit corresponding to {@code expiresAfter}
      * @param deleteAfterExpiration            Whether expired objects should be automatically removed from the cache
      * @param temporalExpirationOnlyWhenUnused If true, the expiration time is dependent on the last time the object got used instead of the time it got added
      * @param oldIndexExpire                   Whether entries with outdated indexes should expire
      * @param indexExpireAfter                 The index threshold after which old entries should expire
      */
-    protected Cache(boolean temporalExpiration, int expiresAfter, TimeUnit expireTimeUnit, boolean deleteAfterExpiration,
+    protected Cache(int expiresAfter, TimeUnit expireTimeUnit, boolean deleteAfterExpiration,
                     boolean temporalExpirationOnlyWhenUnused, boolean oldIndexExpire, int indexExpireAfter) {
-        this.temporalExpiration = temporalExpiration;
         this.expiresAfter = expiresAfter;
         this.expireTimeUnit = expireTimeUnit;
         this.deleteAfterExpiration = deleteAfterExpiration;
@@ -99,10 +96,10 @@ public class Cache<T> {
      * if an object expires via {@link CacheListener#onCachedObjectExpire(CachedObject)}
      */
     protected void tick() {
-        if (isTemporalExpiration()) {
+        if (getExpiresAfter() > 0) {
             lock.readLock().lock();
             try {
-                cached.stream().filter(CachedObject::isExpired)
+                cached.stream().filter(c -> !c.isExpired())
                         .filter(obj -> (System.currentTimeMillis() - (isTemporalExpirationOnlyWhenUnused() ? obj.getLastUpdated() : obj.getTimeAdded()))
                                 >= getExpireTimeUnit().toMillis(getExpiresAfter()))
                         .forEach(obj -> {
@@ -115,14 +112,19 @@ public class Cache<T> {
         }
 
         if (isDeleteAfterExpiration()) {
+            List<CachedObject<?>> toRemove;
             lock.readLock().lock();
             try {
-                cached.stream().filter(CachedObject::isExpired)
-                        .forEach(this::remove);
+                toRemove = cached.stream()
+                        .filter(CachedObject::isExpired)
+                        .collect(Collectors.toList());
             } finally {
                 lock.readLock().unlock();
             }
+
+            toRemove.forEach(this::remove);
         }
+
 
         if (isOldIndexesExpire() && cached.size() > getIndexExpireAfter()) {
             var it = cached.iterator();
@@ -398,8 +400,7 @@ public class Cache<T> {
      */
     public static class CacheBuilder<T> {
         protected static final Set<Cache<?>> caches = Collections.synchronizedSet(new HashSet<>());
-        protected boolean temporalExpiration = false;
-        protected int expiresAfter = 1;
+        protected int expiresAfter = -1;
         protected TimeUnit expireTimeUnit = TimeUnit.MINUTES;
         protected boolean deleteAfterExpiration = false;
         protected boolean temporalExpirationOnlyWhenUnused = false;
@@ -428,17 +429,8 @@ public class Cache<T> {
         }
 
         /**
-         * @param temporalExpiration {@code true} to allow cached objects
-         *                           to expire automatically after some time set by {@link #objectsExpireAfter(int, TimeUnit)}
-         */
-        public CacheBuilder<T> objectsExpireAfterTime(final boolean temporalExpiration) {
-            this.temporalExpiration = temporalExpiration;
-            return this;
-        }
-
-        /**
          * Sets the time objects should expire automatically.
-         * Useless if {@link #objectsExpireAfterTime(boolean)} was set to {@code false}
+         * Use 0 or lower as {@code expiresAfter} value to disable this feature.
          *
          * @param expiresAfter   The duration after which an object may expire
          * @param expireTimeUnit The time unit corresponding to {@code expiresAfter}
@@ -461,10 +453,10 @@ public class Cache<T> {
 
         /**
          * @param temporalExpirationOnlyWhenUnused If {@code true},
-         *                                         the expiration time is dependent on the last time the object got used instead of the time it got added.
+         *                                         the expiration time is dependent on the last time the object got used instead of the time it got added
+         *                                         (or set by {@link #objectsExpireAfter(int, TimeUnit)}).
          *                                         Also see {@link Cache#stream()} and {@link CachedObject} for more useful information related
          *                                         when objects count as used.
-         *                                         <br>Useless if {@link #objectsExpireAfterTime(boolean)} was set to {@code false}
          */
         public CacheBuilder<T> temporalExpirationOnlyWhenUnused(final boolean temporalExpirationOnlyWhenUnused) {
             this.temporalExpirationOnlyWhenUnused = temporalExpirationOnlyWhenUnused;
@@ -493,7 +485,7 @@ public class Cache<T> {
          * @return The {@link Cache} instance you build with this Builder.
          */
         public final Cache<T> build() {
-            Cache<T> cache = new Cache<T>(temporalExpiration,
+            Cache<T> cache = new Cache<T>(
                     expiresAfter,
                     expireTimeUnit,
                     deleteAfterExpiration,
