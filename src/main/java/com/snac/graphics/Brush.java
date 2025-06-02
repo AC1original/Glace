@@ -34,7 +34,7 @@ public interface Brush<I, F> {
     void drawRectangle(int x, int y, int width, int height, boolean filled);
 
     /**
-     * Draws an Image
+     * Draws an Image. Also see {@link ImageLoader}.
      * @param image The image you want to draw
      * @param x Image X-Pos on the window
      * @param y Image Y-Pos on the window

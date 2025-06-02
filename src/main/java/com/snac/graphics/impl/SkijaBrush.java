@@ -73,7 +73,7 @@ public class SkijaBrush implements Brush<Image, Font> {
     }
 
     /**
-     * See {@link Brush#drawImage(Object, int, int, int, int)}
+     * See {@link Brush#drawImage(Object, int, int, int, int)} and {@link SkijaImageLoader}
      */
     @Override
     public void drawImage(Image image, int x, int y, int width, int height) {
