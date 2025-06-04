@@ -4,6 +4,10 @@ import com.snac.graphics.ImageLoader;
 import de.snac.Ez2Log;
 import io.github.humbleui.skija.*;
 
+/**
+ * Image loader to load {@link Image Images} for {@link SkijaRenderer} (or Skija in general).
+ * Extends from {@link ImageLoader}
+ */
 public class SkijaImageLoader extends ImageLoader<Image> {
     private static final Image FALLBACK_IMAGE;
 
@@ -29,6 +33,13 @@ public class SkijaImageLoader extends ImageLoader<Image> {
         paint.close();
     }
 
+    /**
+     * Loads an image from the given path.
+     * <p>This method must be implemented by subclasses to define actual loading logic.</p>
+     *
+     * @param path The path to the image resource
+     * @return The loaded image
+     */
     @Override
     public Image load(String path) {
         try (var stream = getClass().getClassLoader().getResourceAsStream(path)) {
@@ -45,6 +56,11 @@ public class SkijaImageLoader extends ImageLoader<Image> {
         }
     }
 
+    /**
+     * Returns a fallback image to use when loading fails or no cached version is available.
+     *
+     * @return The fallback image
+     */
     @Override
     public Image getFallback() {
         return FALLBACK_IMAGE;

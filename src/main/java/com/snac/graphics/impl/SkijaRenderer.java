@@ -8,6 +8,7 @@ import de.snac.Ez2Log;
 import io.github.humbleui.skija.*;
 import io.github.humbleui.skija.impl.Stats;
 import lombok.Getter;
+import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 
 import static org.lwjgl.glfw.Callbacks.*;
@@ -33,6 +34,7 @@ public class SkijaRenderer implements Renderer {
     private volatile int fps = 0;
     private int width;
     private int height;
+    @Setter
     private float dpi = 1f;
     private Brush<?, ?> brush;
     private DirectContext context;
