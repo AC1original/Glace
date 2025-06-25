@@ -24,8 +24,13 @@ import java.util.function.Consumer;
 
 /**
  * Implementation of {@link Renderer} based on Skija and LWJGL. See {@link Renderer}-Interface for more information.
+ *
+ * @deprecated This class is deprecated and no longer maintained. It was based on Skija/LWJGL,
+ *  which caused issues with cross-platform compatibility (maybe skill issue)<br>
+ *  Consider using the new {@link SwingRenderer Swing-based renderer} instead.
  */
 @Getter
+@Deprecated
 public class SkijaRenderer implements Renderer {
     private long window = 0;
     private volatile Canvas canvas;
