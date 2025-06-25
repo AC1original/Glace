@@ -1,4 +1,4 @@
-package com.snac.main;
+package com.snac.core;
 
 import com.snac.graphics.impl.SkijaRenderer;
 
