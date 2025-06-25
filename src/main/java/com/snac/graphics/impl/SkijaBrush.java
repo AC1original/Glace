@@ -18,8 +18,13 @@ import java.awt.Color;
  * Since an instance of this class is created by the renderer being used
  * and managed together with its {@link com.snac.graphics.Canvas Canvas},
  * you normally don't need to create an instance yourself - unless you're writing your own renderer.
+ *
+ * @deprecated This class is deprecated and no longer maintained. It was based on Skija/LWJGL,
+ *  which caused issues with cross-platform compatibility (maybe skill issue)<br>
+ *  Consider using the new {@link SwingBrush Swing-based brush} instead.
  */
 @Getter
+@Deprecated
 public class SkijaBrush implements Brush<Image, Font> {
     private final Canvas skijaCanvas;
     private final long window;
