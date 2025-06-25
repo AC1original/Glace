@@ -7,7 +7,12 @@ import io.github.humbleui.skija.*;
 /**
  * Image loader to load {@link Image Images} for {@link SkijaRenderer} (or Skija in general).
  * Extends from {@link ImageLoader}
+ *
+ * @deprecated This class is deprecated and no longer maintained. It was based on Skija/LWJGL,
+ *  which caused issues with cross-platform compatibility (maybe skill issue)<br>
+ *  Consider using the new {@link SwingImageLoader Swing-based image loader} instead.
  */
+@Deprecated
 public class SkijaImageLoader extends ImageLoader<Image> {
     private static final Image FALLBACK_IMAGE;
 
