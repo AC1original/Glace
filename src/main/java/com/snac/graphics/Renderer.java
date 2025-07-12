@@ -41,18 +41,6 @@ public interface Renderer {
     void destroyWindow();
 
     /**
-     * Activate VSync. Also see {@link #isVSync()}
-     * @param vsync Set to {@code true} VSync is activated, otherwise disabled
-     */
-    void setVSync(boolean vsync);
-
-    /**
-     * Also see {@link #setVSync(boolean)}
-     * @return {@code true} if VSync is enabled, {@code false} if VSync is disabled
-     */
-    boolean isVSync();
-
-    /**
      * Set a new {@link Canvas}
      * @param canvas The new canvas
      */

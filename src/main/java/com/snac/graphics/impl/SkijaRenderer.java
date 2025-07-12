@@ -256,18 +256,18 @@ public class SkijaRenderer implements Renderer {
     }
 
     /**
-     * See {@link Renderer#setVSync(boolean)}
+     * Activate VSync. Also see {@link #isVSync()}
+     * @param vsync Set to {@code true} VSync is activated, otherwise disabled
      */
-    @Override
     public void setVSync(boolean vsync) {
         this.vsync = vsync;
         glfwSwapInterval(vsync ? 1 : 0);
     }
 
     /**
-     * See {@link Renderer#isVSync()}
+     * Also see {@link #setVSync(boolean)}
+     * @return {@code true} if VSync is enabled, {@code false} if VSync is disabled
      */
-    @Override
     public boolean isVSync() {
         return vsync;
     }
