@@ -16,6 +16,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 
+/**
+ * Implementation of {@link Renderer} based on Swing. See {@link Renderer}-Interface for more information.
+ */
 @Getter
 public class SwingRenderer extends JPanel implements Renderer {
     @Nullable private JFrame frame;
@@ -27,10 +30,21 @@ public class SwingRenderer extends JPanel implements Renderer {
     private final Loop loop;
     private Brush<?, ?> brush;
 
+    /**
+     * Empty constructor. Creates a new SwingRenderer instance with default values
+     */
     public SwingRenderer() {
         this(-1, null, Executors.newSingleThreadExecutor());
     }
 
+    /**
+     * Constructor... You know how those work - at least I hope so
+     * @param maxFPS The maximum FPS the renderer should render on
+     * @param canvas Sets the {@link Canvas}. By setting this to {@code null} a new {@link Canvas} will be created
+     * @param executor The executor this renderer should run on.
+     *                 By setting this to {@code null} this renderer will use the thread the window is created on for the render-loop,
+     *                 which is not recommended as this will block the entire thread.
+     */
     public SwingRenderer(int maxFPS, @Nullable Canvas canvas, @Nullable ExecutorService executor) {
         this.canvas = canvas == null ? new Canvas() : canvas;
         this.maxFps = maxFPS <= 0 ? 60 : maxFPS;
@@ -44,6 +58,10 @@ public class SwingRenderer extends JPanel implements Renderer {
         Ez2Log.info(this, "Initialized");
     }
 
+    /**
+     * Will automatically start the render-loop.
+     * <p>See {@link Renderer#createWindow(int, int, String)} for more information</p>
+     */
     @Override
     public void createWindow(int width, int height, String title) {
         if (this.frame != null) {
@@ -101,6 +119,9 @@ public class SwingRenderer extends JPanel implements Renderer {
         }
     }
 
+    /**
+     * See {@link Renderer#moveWindow(int, int)}
+     */
     @Override
     public void moveWindow(int x, int y) {
         if (frame == null) return;
@@ -108,6 +129,9 @@ public class SwingRenderer extends JPanel implements Renderer {
         frame.setLocation(x, y);
     }
 
+    /**
+     * See {@link Renderer#resizeWindow(int, int)}
+     */
     @Override
     public void resizeWindow(int width, int height) {
         if (frame == null) return;
@@ -115,6 +139,9 @@ public class SwingRenderer extends JPanel implements Renderer {
         frame.setSize(width, height);
     }
 
+    /**
+     * See {@link Renderer#destroyWindow()}
+     */
     @Override
     public void destroyWindow() {
         if (frame == null) return;
@@ -126,31 +153,49 @@ public class SwingRenderer extends JPanel implements Renderer {
         Ez2Log.info(this, "Destroyed JFrame");
     }
 
+    /**
+     * See {@link Renderer#setCanvas(Canvas)}
+     */
     @Override
     public void setCanvas(Canvas canvas) {
         this.canvas = canvas;
     }
 
+    /**
+     * See {@link Renderer#getCanvas()}
+     */
     @Override
     public Canvas getCanvas() {
         return canvas;
     }
 
+    /**
+     * See {@link Renderer#getMaxFPS()}
+     */
     @Override
     public int getMaxFPS() {
         return maxFps;
     }
 
+    /**
+     * See {@link Renderer#setMaxFPS(int)}
+     */
     @Override
     public void setMaxFPS(int fps) {
         this.maxFps = fps;
     }
 
+    /**
+     * See {@link Renderer#getFPS()}
+     */
     @Override
     public int getFPS() {
         return fps;
     }
 
+    /**
+     * See {@link Renderer#render()}
+     */
     @Override
     public synchronized void render() {
         if (getFrame() == null || getCanvas() == null || getBufferStrategy() == null) {

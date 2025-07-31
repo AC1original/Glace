@@ -40,7 +40,6 @@ public class SkijaImageLoader extends ImageLoader<Image> {
 
     /**
      * Loads an image from the given path.
-     * <p>This method must be implemented by subclasses to define actual loading logic.</p>
      *
      * @param path The path to the image resource
      * @return The loaded image
