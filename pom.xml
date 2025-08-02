@@ -13,9 +13,7 @@
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <!-- skija versions -->
         <skija.version>0.116.4</skija.version>
-        <!-- lwjgl version -->
         <lwjgl.version>3.3.6</lwjgl.version>
     </properties>
 
