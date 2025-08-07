@@ -5,8 +5,13 @@ import lombok.Builder;
 import lombok.Getter;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 /**
@@ -14,11 +19,13 @@ import java.util.function.Consumer;
  */
 @Getter
 public class Loop {
-    private boolean running = false;
-    private boolean paused = false;
-    private final boolean runOnThread;
-    private final String threadName;
-    private ExecutorService executorService;
+    protected boolean running = false;
+    protected boolean paused = false;
+    protected final boolean runOnThread;
+    protected final String threadName;
+    protected ExecutorService executorService;
+    protected final List<BiConsumer<Integer, Double>> joinedActions;
+    protected final ReentrantReadWriteLock rwLock;
 
     /**
      * There are two ways to create a new Loop instance:
@@ -34,17 +41,19 @@ public class Loop {
      * @param threadName Sets the name for the generated thread. This only makes sense if runOnThread-parameter is set to {@code true}
      */
     @Builder
-    private Loop(boolean runOnThread, @Nullable String threadName) {
+    protected Loop(boolean runOnThread, @Nullable String threadName) {
         this.runOnThread = runOnThread;
         this.threadName = threadName == null ? "" : threadName;
+        this.joinedActions = Collections.synchronizedList(new ArrayList<>());
+        this.rwLock = new ReentrantReadWriteLock();
     }
 
     /**
-     * Shorter version of {@link #start(Runnable, int, Consumer, Runnable)}
+     * Shorter version of {@link #start(Runnable, int, BiConsumer, Runnable)}
      * @param TARGET_TPS The maximum tps this loop should tick. If you're confused or something just type 60 but NEVER 0 or lower
-     * @param action This consumer gets called every tick with the current fps
+     * @param action This consumer gets called every tick with the current fps and delta time
      */
-    public void start(final int TARGET_TPS, Consumer<Integer> action) {
+    public void start(int TARGET_TPS, BiConsumer<Integer, Double> action) {
         start(() -> {}, TARGET_TPS, action, () -> {});
     }
 
@@ -57,17 +66,17 @@ public class Loop {
      *
      * loop.start(() -> System.out.println("This gets called before loop"),
      *          60,
-     *          (currentFPS) -> render(),
+     *          (currentFPS, deltaTime) -> render(),
      *          () -> System.out.println("This gets called after loop"));
      * }</pre>
      * @param preRun This runnable gets called before the loop starts.
      *               Used to run something on the same thread as this loop.
      *               IDK if this is useful.
      * @param TARGET_TPS The maximum tps this loop should tick. If you're confused or something just type 60 but NEVER 0 or lower
-     * @param action This consumer gets called every tick with the current fps
+     * @param action This consumer gets called every tick with the current fps and delta time
      * @param shutdownHook This runnable gets called when this loop stops.
      */
-    public void start(final Runnable preRun, final int TARGET_TPS, final Consumer<Integer> action, final Runnable shutdownHook) {
+    public void start(Runnable preRun, int TARGET_TPS, BiConsumer<Integer, Double> action, Runnable shutdownHook) {
         if (!running) {
             running = true;
         } else {
@@ -106,6 +115,7 @@ public class Loop {
                     final long tickTime = 1_000_000_000 / TARGET_TPS;
                     long now = System.nanoTime();
                     long elapsed = now - lastTime;
+                    double deltaTime = elapsed / 1_000_000_000.0;
 
                     if (System.currentTimeMillis() - secCount >= 1_000) {
                         secCount = System.currentTimeMillis();
@@ -115,7 +125,15 @@ public class Loop {
 
                     if (elapsed >= tickTime) {
                         tCount++;
-                        action.accept(tps);
+                        action.accept(tps, deltaTime);
+                        try {
+                            rwLock.readLock().lock();
+                            for (var eAction : joinedActions) {
+                                eAction.accept(tps, deltaTime);
+                            }
+                        } finally {
+                            rwLock.readLock().unlock();
+                        }
                         lastTime += tickTime;
                     } else {
                         long sleepNanos = tickTime - elapsed;
@@ -144,9 +162,18 @@ public class Loop {
     }
 
     /**
+     * This methode joins the loop running on a specific Loop-instance.
+     * The {@link BiConsumer} gets called same as the consumer in the {@link #start(int, BiConsumer) start method}.
+     * @param action This consumer gets called every tick with the current fps and delta time
+     */
+    public void join(BiConsumer<Integer, Double> action) {
+        joinedActions.add(action);
+    }
+
+    /**
      * You can stop the loop at any time with this methode.
      * To start the loop again,
-     * you have to call {@link #start(Runnable, int, Consumer, Runnable)} or {@link #start(int, Consumer)}
+     * you have to call {@link #start(Runnable, int, BiConsumer, Runnable)} or {@link #start(int, BiConsumer)}
      */
     public void stop() {
         running = false;
