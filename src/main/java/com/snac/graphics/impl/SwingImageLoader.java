@@ -13,7 +13,7 @@ import java.io.FileNotFoundException;
  * Extends from {@link ImageLoader}
  */
 public class SwingImageLoader extends ImageLoader<BufferedImage> {
-    private static final BufferedImage FALLBACK_IMAGE;
+    protected static final BufferedImage FALLBACK_IMAGE;
 
     static {
         FALLBACK_IMAGE = new BufferedImage(2, 2, BufferedImage.TYPE_INT_ARGB);

@@ -6,6 +6,7 @@ import com.snac.graphics.Renderer;
 import com.snac.util.Loop;
 import de.snac.Ez2Log;
 import lombok.Getter;
+import lombok.Setter;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
@@ -14,21 +15,29 @@ import java.awt.event.WindowEvent;
 import java.awt.image.BufferStrategy;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 /**
  * Implementation of {@link Renderer} based on Swing. See {@link Renderer}-Interface for more information.
+ * <p>
+ *     The easiest way to modify the rendering process is by using {@link #setPreRender(Runnable)}, {@link #setRenderLoopAction(BiConsumer)} or {@link #setPostRender(Runnable)}<br>
+ *     Otherwise, you can just extend this class or write your own renderer with the {@link Renderer Renderer interface}
+ * </p>
  */
 @Getter
 public class SwingRenderer extends JPanel implements Renderer {
-    @Nullable private JFrame frame;
-    @Nullable private BufferStrategy bufferStrategy;
-    private volatile Canvas canvas;
-    private volatile int maxFps;
-    private volatile int fps;
-    private final ExecutorService executor;
-    private final Loop loop;
-    private Brush<?, ?> brush;
+    @Nullable protected JFrame frame;
+    @Nullable protected BufferStrategy bufferStrategy;
+    protected volatile Canvas canvas;
+    protected volatile int maxFps;
+    protected volatile int fps;
+    protected final ExecutorService executor;
+    protected final Loop loop;
+    protected Brush<?, ?> brush;
+    @Setter protected Runnable preRender;
+    @Setter protected Runnable postRender;
+    @Setter protected BiConsumer<Integer, Double> renderLoopAction;
 
     /**
      * Empty constructor. Creates a new SwingRenderer instance with default values
@@ -54,6 +63,13 @@ public class SwingRenderer extends JPanel implements Renderer {
                 .runOnThread(executor == null)
                 .threadName("Swing-Rendering")
                 .build();
+
+        preRender = () -> {};
+        postRender = () -> Ez2Log.info(this, "Shutting down render loop");
+        renderLoopAction = (fps, deltaTime) -> {
+          this.fps = fps;
+          render();
+        };
 
         Ez2Log.info(this, "Initialized");
     }
@@ -93,29 +109,14 @@ public class SwingRenderer extends JPanel implements Renderer {
         startRenderLoop();
     }
 
-    private void startRenderLoop() {
-        var renderRun = new Consumer<Integer>() {
-            @Override
-            public void accept(Integer integer) {
-                fps = integer;
-                render();
-            }
-        };
-
-        var shutdownRun = new Runnable() {
-            @Override
-            public void run() {
-                Ez2Log.info(this, "Shutting down render loop");
-            }
-        };
-
+    protected void startRenderLoop() {
         var exec = Executors.newSingleThreadExecutor();
         if (!loop.isRunOnThread()) {
             exec.execute(() -> {
-                loop.start(() -> {}, maxFps, renderRun, shutdownRun);
+                loop.start(preRender, maxFps, renderLoopAction, postRender);
             });
         } else {
-            loop.start(() -> {}, maxFps, renderRun, shutdownRun);
+            loop.start(preRender, maxFps, renderLoopAction, postRender);
         }
     }
 

@@ -14,9 +14,9 @@ import java.awt.image.BufferedImage;
  */
 @Getter
 public class SwingBrush implements Brush<BufferedImage, Font> {
-    private final Graphics2D graphics;
-    private final Graphics2D original;
-    private float size = 1;
+    protected final Graphics2D graphics;
+    protected final Graphics2D original;
+    protected float size = 1;
 
     /**
      * As said before: Since an instance of this class is created by the renderer being used
