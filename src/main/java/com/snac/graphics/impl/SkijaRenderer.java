@@ -20,6 +20,7 @@ import org.lwjgl.opengl.GL;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 /**
@@ -143,9 +144,9 @@ public class SkijaRenderer implements Renderer {
             }
         };
 
-        var renderRun = new Consumer<Integer>() {
+        var renderRun = new BiConsumer<Integer, Double>() {
             @Override
-            public void accept(Integer integer) {
+            public void accept(Integer integer, Double dbl) {
                 fps = integer;
                 render();
                 glfwPollEvents();
