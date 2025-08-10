@@ -1,8 +1,8 @@
 package com.snac.graphics;
 
 import com.snac.data.runtime.caching.Cache;
-import de.snac.Ez2Log;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.concurrent.TimeUnit;
 
@@ -21,6 +21,7 @@ import java.util.concurrent.TimeUnit;
  * @param <I> The type of the image the loader handles
  */
 @Getter
+@Slf4j
 public abstract class ImageLoader<I> {
 
     /**
@@ -117,7 +118,7 @@ public abstract class ImageLoader<I> {
      */
     public I cache(I image, String name) {
         cache.add(name, image);
-        Ez2Log.info(this, "Cached image '" + name + "'");
+        log.info("Cached image '{}'", name);
         return image;
     }
 

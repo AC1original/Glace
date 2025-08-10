@@ -4,9 +4,9 @@ import com.snac.graphics.Brush;
 import com.snac.graphics.Canvas;
 import com.snac.graphics.Renderer;
 import com.snac.util.Loop;
-import de.snac.Ez2Log;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
@@ -16,7 +16,6 @@ import java.awt.image.BufferStrategy;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
 /**
  * Implementation of {@link Renderer} based on Swing. See {@link Renderer}-Interface for more information.
@@ -26,6 +25,7 @@ import java.util.function.Consumer;
  * </p>
  */
 @Getter
+@Slf4j
 public class SwingRenderer extends JPanel implements Renderer {
     @Nullable protected JFrame frame;
     @Nullable protected BufferStrategy bufferStrategy;
@@ -65,13 +65,13 @@ public class SwingRenderer extends JPanel implements Renderer {
                 .build();
 
         preRender = () -> {};
-        postRender = () -> Ez2Log.info(this, "Shutting down render loop");
+        postRender = () -> log.info("Shutting down render loop");
         renderLoopAction = (fps, deltaTime) -> {
           this.fps = fps;
           render();
         };
 
-        Ez2Log.info(this, "Initialized");
+        log.info("Initialized");
     }
 
     /**
@@ -81,7 +81,7 @@ public class SwingRenderer extends JPanel implements Renderer {
     @Override
     public void createWindow(int width, int height, String title) {
         if (this.frame != null) {
-            Ez2Log.warn(this, "Could not create window, only one window per renderer is allowed.");
+            log.warn("Could not create window, only one window per renderer is allowed.");
             return;
         }
         this.frame = new JFrame();
@@ -100,7 +100,7 @@ public class SwingRenderer extends JPanel implements Renderer {
             @Override
             public void windowClosing(WindowEvent e) {
                 loop.stop();
-                Ez2Log.info(SwingRenderer.class, "JFrame has been terminated");
+                log.info("JFrame has been terminated");
             }
         });
 
@@ -151,7 +151,7 @@ public class SwingRenderer extends JPanel implements Renderer {
         frame.setVisible(false);
         this.frame = null;
 
-        Ez2Log.info(this, "Destroyed JFrame");
+        log.info("Destroyed JFrame");
     }
 
     /**

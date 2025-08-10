@@ -1,7 +1,7 @@
 package com.snac.util;
 
-import de.snac.Ez2Log;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.Serializable;
 
@@ -24,6 +24,7 @@ import java.io.Serializable;
  * </p>
  */
 @Getter
+@Slf4j
 public class Vector2D implements Serializable {
     private double x;
     private double y;
@@ -96,7 +97,7 @@ public class Vector2D implements Serializable {
      */
     public Vector2D divide(double scalar) {
         if (scalar == 0) {
-            Ez2Log.error(this, "Division by zero", new ArithmeticException("Division by zero"));
+            log.error("Division by zero", new ArithmeticException("Division by zero"));
         }
         this.x /= scalar;
         this.y /= scalar;

@@ -2,6 +2,7 @@ package com.snac.graphics.impl;
 
 import com.snac.graphics.Brush;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -13,6 +14,7 @@ import java.awt.image.BufferedImage;
  * you normally don't need to create an instance yourself - unless you're writing your own renderer.
  */
 @Getter
+@Slf4j
 public class SwingBrush implements Brush<BufferedImage, Font> {
     protected final Graphics2D graphics;
     protected final Graphics2D original;
@@ -28,6 +30,8 @@ public class SwingBrush implements Brush<BufferedImage, Font> {
     public SwingBrush(Graphics graphics) {
         this.graphics = (Graphics2D) graphics;
         this.original = (Graphics2D) graphics.create();
+
+        log.info("Initialized");
     }
 
     /**

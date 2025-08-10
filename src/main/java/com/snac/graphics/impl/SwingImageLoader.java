@@ -1,7 +1,7 @@
 package com.snac.graphics.impl;
 
 import com.snac.graphics.ImageLoader;
-import de.snac.Ez2Log;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -12,6 +12,7 @@ import java.io.FileNotFoundException;
  * Image loader to load {@link BufferedImage Images} for {@link SwingRenderer} (or Swing in general).
  * Extends from {@link ImageLoader}
  */
+@Slf4j
 public class SwingImageLoader extends ImageLoader<BufferedImage> {
     protected static final BufferedImage FALLBACK_IMAGE;
 
@@ -37,9 +38,9 @@ public class SwingImageLoader extends ImageLoader<BufferedImage> {
             if (stream == null) throw new FileNotFoundException("Ressource not found:" + path);
 
             image = ImageIO.read(stream);
-            Ez2Log.info(ImageLoader.class, "Loaded image from: " + path);
+            log.info("Loaded image from: {}", path);
         } catch (Exception e) {
-            Ez2Log.warn(ImageLoader.class, "Failed to load image from: '%s' | '%s'. Returned fallback image", path, e);
+            log.warn("Failed to load image from: '{}' | '{}'. Returned fallback image", path, e.toString());
         }
 
         return null;

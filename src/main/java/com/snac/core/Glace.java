@@ -6,10 +6,10 @@ import com.snac.graphics.Renderer;
 import com.snac.graphics.impl.SwingImageLoader;
 import com.snac.graphics.impl.SwingRenderer;
 import com.snac.util.Loop;
-import de.snac.Ez2Log;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -19,6 +19,7 @@ import java.util.Set;
 
 @Getter
 @Setter
+@Slf4j
 public final class Glace {
     public static final Glace INSTANCE = new Glace();
 
@@ -38,7 +39,7 @@ public final class Glace {
         objectManager = new GameObjectManager(renderer);
 
         startGameLoop();
-        Ez2Log.info(this, "Initialized");
+        log.info("Initialized");
     }
 
     private Glace() {
@@ -56,14 +57,14 @@ public final class Glace {
     }
 
     private void startGameLoop() {
-        loop.start(() -> Ez2Log.info(this, "Starting game loop"),
+        loop.start(() -> log.info("Starting game loop"),
                 20,
                 (fps, deltaTime) -> {
                     tick(deltaTime);
                     this.currentGameLoopFPS = fps;
                 },
                 () -> {
-                    Ez2Log.warn(this, "Game loop stopped. On purpose, bug or just skill issue?");
+                    log.warn("Game loop stopped. On purpose, bug or just skill issue?");
                     shutdownHooks.forEach(Runnable::run);
                 });
     }

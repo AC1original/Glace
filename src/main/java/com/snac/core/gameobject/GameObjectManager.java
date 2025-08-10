@@ -2,16 +2,16 @@ package com.snac.core.gameobject;
 
 import com.snac.graphics.Renderer;
 import com.snac.util.HitBox;
-import com.snac.util.TryCatch;
-import de.snac.Ez2Log;
 import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 @Getter
+@Slf4j
 public class GameObjectManager {
     @Getter(AccessLevel.NONE)
     protected final Set<AbstractObjectBase<?>> gameObjects;
@@ -26,7 +26,7 @@ public class GameObjectManager {
         this.renderer = renderer;
         this.posFinderHitBox = new HitBox(0, 0, 1, 1);
 
-        Ez2Log.info(this, "Initialized");
+        log.info("Initialized");
     }
 
     public GameObjectManager addGameObject(AbstractObjectBase<?> gameObject) {
@@ -36,7 +36,7 @@ public class GameObjectManager {
             gameObject.internalCreate(this);
             renderer.getCanvas().addRenderable(gameObject);
 
-            Ez2Log.info(this, "Added new GameObject of type '%s' with UUID '%s'",
+            log.info("Added new GameObject of type '{}' with UUID '{}'",
                     gameObject.getClass().getSimpleName(),
                     gameObject.getUuid());
         } finally {
@@ -52,7 +52,7 @@ public class GameObjectManager {
             gameObject.onDestroy();
             renderer.getCanvas().removeRenderable(gameObject);
 
-            Ez2Log.info(this, "Removed GameObject of type '%s' with UUID '%s'",
+            log.info("Removed GameObject of type '{}' with UUID '{}'",
                     gameObject.getClass().getSimpleName(),
                     gameObject.getUuid());
         } finally {

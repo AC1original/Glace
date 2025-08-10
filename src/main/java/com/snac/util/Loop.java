@@ -1,8 +1,8 @@
 package com.snac.util;
 
-import de.snac.Ez2Log;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -12,12 +12,12 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
 /**
  * This class is used to create (Game-)Loops with a specific tps frequency
  */
 @Getter
+@Slf4j
 public class Loop {
     protected boolean running = false;
     protected boolean paused = false;
@@ -147,7 +147,7 @@ public class Loop {
                 }
                 shutdownHook.run();
             } catch (Exception e) {
-                Ez2Log.error(this, "Error in loop", e);
+                log.error("Error in loop: {}", e.toString());
                 stop();
             }
         };
@@ -168,6 +168,7 @@ public class Loop {
      */
     public void join(BiConsumer<Integer, Double> action) {
         joinedActions.add(action);
+        log.info("Action joined");
     }
 
     /**
@@ -180,6 +181,8 @@ public class Loop {
         if (executorService != null) {
             executorService.shutdownNow();
         }
+
+        log.info("Stopped");
     }
 
     /**

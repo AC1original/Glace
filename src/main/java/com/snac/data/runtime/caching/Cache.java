@@ -1,9 +1,9 @@
 package com.snac.data.runtime.caching;
 
 import com.snac.util.Loop;
-import de.snac.Ez2Log;
 import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -37,6 +37,7 @@ import java.util.stream.Stream;
  * @param <T> The type of objects to be stored in the cache
  */
 @Getter
+@Slf4j
 public class Cache<T> {
     protected final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
     protected final LinkedHashSet<CachedObject<T>> cached = new LinkedHashSet<>();
@@ -427,7 +428,7 @@ public class Cache<T> {
                     .runOnThread(true)
                     .threadName("Caching-Thread")
                     .build()
-                    .start(20, (fps) -> {
+                    .start(20, (fps, deltaTime) -> {
                         synchronized (caches) {
                             caches.forEach(Cache::tick);
                         }
@@ -506,7 +507,7 @@ public class Cache<T> {
                     indexExpireAfter > 0,
                     indexExpireAfter);
             caches.add(cache);
-            Ez2Log.info(cache, "Initialized new cache");
+            log.info("Initialized new cache");
             return cache;
         }
     }
