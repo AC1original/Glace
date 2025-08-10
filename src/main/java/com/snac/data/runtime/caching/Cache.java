@@ -40,6 +40,7 @@ import java.util.stream.Stream;
 @Slf4j
 public class Cache<T> {
     protected final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+    @Getter(AccessLevel.NONE)
     protected final LinkedHashSet<CachedObject<T>> cached = new LinkedHashSet<>();
     protected final List<CacheListener> listeners = Collections.synchronizedList(new ArrayList<>());
     protected final int expiresAfter;
@@ -100,7 +101,8 @@ public class Cache<T> {
         if (getExpiresAfter() > 0) {
             lock.readLock().lock();
             try {
-                cached.stream().filter(c -> !c.isExpired())
+                cached.stream()
+                        .filter(c -> !c.isExpired())
                         .filter(obj -> (System.currentTimeMillis() - (isTemporalExpirationOnlyWhenUnused() ? obj.getLastUpdated() : obj.getTimeAdded()))
                                 >= getExpireTimeUnit().toMillis(getExpiresAfter()))
                         .forEach(CachedObject::expire);
@@ -128,7 +130,7 @@ public class Cache<T> {
         if (isOldIndexesExpire() && ueIndexes > getIndexExpireAfter()) {
             lock.readLock().lock();
             try {
-                for (var delIndex = ueIndexes - getIndexExpireAfter(); delIndex > 0; delIndex-- ) {
+                for (var delIndex = ueIndexes - getIndexExpireAfter(); delIndex > 0; delIndex--) {
                     cached.stream()
                             .filter(obj -> !obj.isExpired())
                             .findFirst()
@@ -263,7 +265,8 @@ public class Cache<T> {
     public void remove(T object) {
         lock.readLock().lock();
         try {
-            cached.stream().filter(obj -> obj.object.equals(object))
+            cached.stream()
+                    .filter(obj -> obj.object.equals(object))
                     .forEach(obj -> remove(obj.getKey()));
         } finally {
             lock.readLock().unlock();

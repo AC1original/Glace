@@ -1,5 +1,7 @@
 package com.snac.graphics;
 
+import com.snac.core.gameobject.AbstractObjectBase;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -15,16 +17,28 @@ import java.util.stream.Stream;
  * For example, one for the game itself,
  * one for the game-over screen and one for the settings menu and switch to the one currently needed.
  * <p>
- *     The {@link Renderer} will render every {@link Renderable} added to its current Canvas.
+ * The {@link Renderer} will render every {@link Renderable} added to its current Canvas.
  * </p>
  * Also see {@link Renderer} and {@link Renderable} for more information.
  */
+// TODO: Move renderables which are out of sight to seperated list and move them back again if they're in sight. Performanceeeeee
 public class Canvas {
-    protected final List<Renderable> renderables = Collections.synchronizedList(new ArrayList<>());
-    protected final ReadWriteLock rwLock = new ReentrantReadWriteLock();
+    protected final List<Renderable> renderables;
+    protected final List<Renderable> renderBuffer;
+    protected final ReadWriteLock rwLock;
+
+    /**
+     * Creates a new Canvas instance.
+     */
+    public Canvas() {
+        this.renderables = Collections.synchronizedList(new ArrayList<>());
+        this.renderBuffer = new ArrayList<>();
+        this.rwLock = new ReentrantReadWriteLock();
+    }
 
     /**
      * Adds a new {@link Renderable} to Canvas.
+     *
      * @param renderable The renderable you want to add
      */
     public void addRenderable(final Renderable renderable) {
@@ -34,6 +48,7 @@ public class Canvas {
 
     /**
      * Removes a {@link Renderable} from Canvas
+     *
      * @param renderable The renderable you want to remove
      */
     public void removeRenderable(final Renderable renderable) {
@@ -43,6 +58,7 @@ public class Canvas {
 
     /**
      * For thread safety and clarity purposes, this method only returns a copy of the renderables-list.
+     *
      * @return A copy of the renderables-list from the canvas
      */
     public List<Renderable> getRenderables() {
@@ -79,7 +95,7 @@ public class Canvas {
      * Only called when a drawable is added or removed.
      * <p>IDK what exactly I did here, but it somehow works - at least I think so.</p>
      */
-    protected void sortRenderables() {
+    protected synchronized void sortRenderables() {
         rwLock.writeLock().lock();
         try {
             var updated = new ArrayList<>(renderables);
@@ -105,16 +121,25 @@ public class Canvas {
 
     /**
      * Renders every {@link Renderable}
+     *
      * @param brush The brush which is passed on to every renderable
      */
     public void render(Brush<?, ?> brush) {
         rwLock.readLock().lock();
         try {
-            renderables.stream()
-                    .filter(Renderable::visible)
-                    .forEach(r -> r.render(brush));
+            renderBuffer.clear();
+            renderBuffer.addAll(renderables);
         } finally {
             rwLock.readLock().unlock();
         }
+
+        renderBuffer.stream()
+                .filter(Renderable::visible)
+                .forEach(r -> {
+                    r.render(brush);
+                    if (r instanceof AbstractObjectBase<?>) {
+                        ((AbstractObjectBase<?>) r).onRender(brush);
+                    }
+                });
     }
 }
