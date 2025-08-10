@@ -2,6 +2,7 @@ package com.snac.core.gameobject;
 
 import com.snac.graphics.Renderer;
 import com.snac.util.HitBox;
+import com.snac.util.TryCatch;
 import de.snac.Ez2Log;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -16,6 +17,7 @@ public class GameObjectManager {
     protected final Set<AbstractObjectBase<?>> gameObjects;
     protected final ReentrantReadWriteLock rwLock;
     protected final Renderer renderer;
+    @Getter(AccessLevel.NONE)
     protected final HitBox posFinderHitBox;
 
     public GameObjectManager(Renderer renderer) {
@@ -31,7 +33,7 @@ public class GameObjectManager {
         try {
             rwLock.writeLock().lock();
             gameObjects.add(gameObject);
-            gameObject.onCreate();
+            gameObject.internalCreate(this);
             renderer.getCanvas().addRenderable(gameObject);
 
             Ez2Log.info(this, "Added new GameObject of type '%s' with UUID '%s'",
@@ -44,7 +46,6 @@ public class GameObjectManager {
     }
 
     public GameObjectManager removeGameObject(AbstractObjectBase<?> gameObject) {
-
         try {
             rwLock.writeLock().lock();
             gameObjects.remove(gameObject);
@@ -64,7 +65,7 @@ public class GameObjectManager {
         rwLock.readLock().lock();
         try {
             for (AbstractObjectBase<?> gameObject : gameObjects) {
-                gameObject.onUpdate(deltaTime);
+                gameObject.internalUpdate(deltaTime);
             }
         } finally {
             rwLock.readLock().unlock();
@@ -113,6 +114,39 @@ public class GameObjectManager {
             rwLock.readLock().unlock();
         }
         return null;
+    }
+
+    public boolean collides(AbstractObjectBase<?> gameObject) {
+        try {
+            rwLock.readLock().lock();
+            for (AbstractObjectBase<?> gO : gameObjects) {
+                if (gO.getHitBox().intersects(gameObject.getHitBox())) {
+                    return true;
+                }
+            }
+        } finally {
+            rwLock.readLock().unlock();
+        }
+        return false;
+    }
+
+    public List<AbstractObjectBase<?>> getCollisions(AbstractObjectBase<?> gameObject) {
+        if (!collides(gameObject)) {
+            return Collections.emptyList();
+        }
+
+        final var collisions = new ArrayList<AbstractObjectBase<?>>();
+        try {
+            rwLock.readLock().lock();
+            for (AbstractObjectBase<?> gO : gameObjects) {
+                if (gO.getHitBox().intersects(gameObject.getHitBox())) {
+                    collisions.add(gO);
+                }
+            }
+        } finally {
+            rwLock.readLock().unlock();
+        }
+        return collisions;
     }
 
     public List<AbstractObjectBase<?>> getGameObjects() {
