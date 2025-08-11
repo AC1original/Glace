@@ -2,7 +2,6 @@ package com.snac.core.gameobject;
 
 import com.snac.graphics.Renderer;
 import com.snac.util.HitBox;
-import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.Nullable;
@@ -11,18 +10,46 @@ import java.util.*;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Stream;
 
+/**
+ * Class to manage game objects.
+ * For a proper use of this framework you should add your {@link AbstractObjectBase game objects} to a valid instance of this class.
+ * This class is thread safe (at least I hope so) and does all the work related to game objects for you.
+ *
+ * <p>
+ *     If you want to modify this class, feel free to do so.
+ * </p>
+ */
 @Slf4j
 public class GameObjectManager {
+
+    /**
+     * This {@link Set} contains all game objects managed by this manager.
+     */
     protected final Set<AbstractObjectBase<?>> gameObjects;
-    protected final Set<AbstractObjectBase<?>> tickBuffer;
+
+    /**
+     * A {@link HitBox} used to find game objects at a given position.
+     * By creating only one instance of this class, we can reuse it for all game objects.
+     */
     protected final HitBox posFinderHitBox;
+
+    /**
+     * The {@link ReentrantReadWriteLock} used to synchronize access to the {@link #gameObjects}.
+     */
     protected final ReentrantReadWriteLock rwLock;
+
+    /**
+     * The {@link Renderer} used to render the game objects.
+     */
     @Getter
     protected final Renderer renderer;
 
+    /**
+     * Create a new {@link GameObjectManager} instance.
+     * @param renderer The {@link Renderer} used to render the game objects.
+     */
     public GameObjectManager(Renderer renderer) {
         this.gameObjects = Collections.synchronizedSet(new HashSet<>());
-        this.tickBuffer = new HashSet<>();
         this.rwLock = new ReentrantReadWriteLock();
         this.renderer = renderer;
         this.posFinderHitBox = new HitBox(0, 0, 1, 1);
@@ -30,6 +57,11 @@ public class GameObjectManager {
         log.info("Initialized");
     }
 
+    /**
+     * Add a new game object to this manager.
+     * @param gameObject the game object to add
+     * @return this manager instance, for chaining
+     */
     public GameObjectManager addGameObject(AbstractObjectBase<?> gameObject) {
         gameObjects.add(gameObject);
         gameObject.internalCreate(this);
@@ -42,7 +74,12 @@ public class GameObjectManager {
         return this;
     }
 
-    public GameObjectManager removeGameObject(AbstractObjectBase<?> gameObject) {
+    /**
+     * Destroy a game object from this manager.
+     * @param gameObject the game object to destroy
+     * @return this manager instance, for chaining
+     */
+    public GameObjectManager destroyGameObject(AbstractObjectBase<?> gameObject) {
         gameObjects.remove(gameObject);
         gameObject.onDestroy();
         renderer.getCanvas().removeRenderable(gameObject);
@@ -54,20 +91,26 @@ public class GameObjectManager {
         return this;
     }
 
+    /**
+     * This method ensures that all game objects are updated.
+     * This method must be called every calculation cycle, maybe from the main {@link com.snac.util.Loop}.
+     * @param deltaTime the time passed since the last update
+     */
     public synchronized void tick(double deltaTime) {
         rwLock.readLock().lock();
         try {
-            tickBuffer.clear();
-            tickBuffer.addAll(gameObjects);
+            gameObjects.forEach(gO -> gO.internalUpdate(deltaTime));
         } finally {
             rwLock.readLock().unlock();
         }
-
-        for (AbstractObjectBase<?> gameObject : gameObjects) {
-            gameObject.internalUpdate(deltaTime);
-        }
     }
 
+    /**
+     * Get all game objects at a given position.
+     * @param x The x coordinate
+     * @param y The y coordinate
+     * @return A list of game objects at the given position
+     */
     public synchronized List<AbstractObjectBase<?>> getObjectsAt(int x, int y) {
         posFinderHitBox.setX(x);
         posFinderHitBox.setY(y);
@@ -83,14 +126,28 @@ public class GameObjectManager {
         }
     }
 
+    /**
+     * Check if a game object with a given UUID exists.
+     * @param uuid The UUID to check
+     * @return {@code true} if the UUID exists, otherwise {@code false}
+     */
     public boolean containsGameObjectFromUUID(UUID uuid) {
         return getGameObjectFromUUID(uuid) != null;
     }
 
+    /**
+     * Check if a given game object exists.
+     * @param gameObject The game object to check
+     * @return {@code true} if the game object exists, otherwise {@code false}
+     */
     public boolean containsGameObject(AbstractObjectBase<?> gameObject) {
         return gameObjects.contains(gameObject);
     }
 
+    /**
+     * Get a list of all game object UUIDs.
+     * @return A list of all game object UUIDs
+     */
     public List<UUID> getGameObjectUuids() {
         rwLock.readLock().lock();
         try {
@@ -103,15 +160,24 @@ public class GameObjectManager {
         }
     }
 
+    /**
+     * Get a stream of all game objects.
+     * @return A stream of all game objects
+     */
     public Stream<AbstractObjectBase<?>> streamObjects() {
         rwLock.readLock().lock();
         try {
-            return new ArrayList<AbstractObjectBase<?>>(gameObjects).stream();
+            return new ArrayList<>(gameObjects).stream();
         } finally {
             rwLock.readLock().unlock();
         }
     }
 
+    /**
+     * Get a game object from a given UUID.
+     * @param uuid The UUID to search for
+     * @return The game object with the given UUID, or {@code null} if no such object exists
+     */
     @Nullable
     public AbstractObjectBase<?> getGameObjectFromUUID(UUID uuid) {
         rwLock.readLock().lock();
@@ -126,6 +192,11 @@ public class GameObjectManager {
         }
     }
 
+    /**
+     * Check if a given game object collides with any other game object.
+     * @param gameObject The game object to check for collisions with
+     * @return {@code true} if the game object collides with any other game object, otherwise {@code false}
+     */
     public boolean collides(AbstractObjectBase<?> gameObject) {
         rwLock.readLock().lock();
         try {
@@ -137,6 +208,11 @@ public class GameObjectManager {
         }
     }
 
+    /**
+     * Get a list of all game objects that collide with a given game object.
+     * @param gameObject The game object to check for collisions with
+     * @return List of all game objects that collide with the given game object
+     */
     public List<AbstractObjectBase<?>> getCollisions(AbstractObjectBase<?> gameObject) {
         if (!collides(gameObject)) {
             return Collections.emptyList();
@@ -153,6 +229,12 @@ public class GameObjectManager {
         }
     }
 
+    /**
+     * Get a list of all game objects managed by this manager.
+     * This list is a copy of the internal list,
+     * so modifications to the returned list will not affect the internal list.
+     * @return A list of all game objects managed by this manager
+     */
     public List<AbstractObjectBase<?>> getGameObjects() {
         return List.copyOf(gameObjects);
     }
