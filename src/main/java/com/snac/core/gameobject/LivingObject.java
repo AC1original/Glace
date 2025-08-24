@@ -1,4 +1,4 @@
 package com.snac.core.gameobject;
 
-public class LivingObject extends PhysicalObject {
+public abstract class LivingObject<I> extends PhysicalObject<I> {
 }

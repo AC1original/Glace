@@ -9,7 +9,7 @@ package com.snac.graphics;
  * </p>
  * Also see {@link Renderer}
  */
-public interface Renderable {
+public interface Renderable<I, F> {
 
     /**
      * This method is called every frame.
@@ -26,7 +26,7 @@ public interface Renderable {
      * <br>3. The used {@link Renderer} is running (Window got created, render loop is running)
      * @param brush The brush used for rendering. See the {@link Brush} class for more information.
      */
-    void render(Brush<?, ?> brush);
+    void render(Brush<I, F> brush);
 
     /**
      * By overriding this method, you can decide if this Renderable is hidden or drawn.<br>

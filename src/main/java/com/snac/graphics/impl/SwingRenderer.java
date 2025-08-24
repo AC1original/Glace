@@ -10,9 +10,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferStrategy;
+import java.awt.image.BufferedImage;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.BiConsumer;
@@ -26,15 +28,15 @@ import java.util.function.BiConsumer;
  */
 @Getter
 @Slf4j
-public class SwingRenderer extends JPanel implements Renderer {
+public class SwingRenderer extends JPanel implements Renderer<BufferedImage, Font> {
     @Nullable protected JFrame frame;
     @Nullable protected BufferStrategy bufferStrategy;
-    protected volatile Canvas canvas;
-    protected volatile int maxFps;
-    protected volatile int fps;
+    @Setter protected volatile Canvas<BufferedImage, Font> canvas;
+    @Setter protected volatile int maxFPS;
+    protected volatile int FPS;
     protected final ExecutorService executor;
     protected final Loop loop;
-    protected Brush<?, ?> brush;
+    protected Brush<BufferedImage, Font> brush;
     @Setter protected Runnable preRender;
     @Setter protected Runnable postRender;
     @Setter protected BiConsumer<Integer, Double> renderLoopAction;
@@ -54,9 +56,9 @@ public class SwingRenderer extends JPanel implements Renderer {
      *                 By setting this to {@code null} this renderer will use the thread the window is created on for the render-loop,
      *                 which is not recommended as this will block the entire thread.
      */
-    public SwingRenderer(int maxFPS, @Nullable Canvas canvas, @Nullable ExecutorService executor) {
-        this.canvas = canvas == null ? new Canvas() : canvas;
-        this.maxFps = maxFPS <= 0 ? 60 : maxFPS;
+    public SwingRenderer(int maxFPS, @Nullable Canvas<BufferedImage, Font> canvas, @Nullable ExecutorService executor) {
+        this.canvas = canvas == null ? new Canvas<>() : canvas;
+        this.maxFPS = maxFPS <= 0 ? 60 : maxFPS;
         this.executor = executor;
 
         this.loop = Loop.builder()
@@ -67,7 +69,7 @@ public class SwingRenderer extends JPanel implements Renderer {
         preRender = () -> {};
         postRender = () -> log.info("Shutting down render loop");
         renderLoopAction = (fps, deltaTime) -> {
-          this.fps = fps;
+          this.FPS = fps;
           render();
         };
 
@@ -113,10 +115,10 @@ public class SwingRenderer extends JPanel implements Renderer {
         var exec = Executors.newSingleThreadExecutor();
         if (!loop.isRunOnThread()) {
             exec.execute(() -> {
-                loop.start(preRender, maxFps, renderLoopAction, postRender);
+                loop.start(preRender, maxFPS, renderLoopAction, postRender);
             });
         } else {
-            loop.start(preRender, maxFps, renderLoopAction, postRender);
+            loop.start(preRender, maxFPS, renderLoopAction, postRender);
         }
     }
 
@@ -152,46 +154,6 @@ public class SwingRenderer extends JPanel implements Renderer {
         this.frame = null;
 
         log.info("Destroyed JFrame");
-    }
-
-    /**
-     * See {@link Renderer#setCanvas(Canvas)}
-     */
-    @Override
-    public void setCanvas(Canvas canvas) {
-        this.canvas = canvas;
-    }
-
-    /**
-     * See {@link Renderer#getCanvas()}
-     */
-    @Override
-    public Canvas getCanvas() {
-        return canvas;
-    }
-
-    /**
-     * See {@link Renderer#getMaxFPS()}
-     */
-    @Override
-    public int getMaxFPS() {
-        return maxFps;
-    }
-
-    /**
-     * See {@link Renderer#setMaxFPS(int)}
-     */
-    @Override
-    public void setMaxFPS(int fps) {
-        this.maxFps = fps;
-    }
-
-    /**
-     * See {@link Renderer#getFPS()}
-     */
-    @Override
-    public int getFPS() {
-        return fps;
     }
 
     /**

@@ -28,7 +28,7 @@ import java.util.UUID;
  */
 //TODO: New feature. Attach other objects to this object.
 @Getter
-public abstract class AbstractObjectBase<I> implements Renderable, Serializable {
+public abstract class AbstractObjectBase<I> implements Renderable<I, Void>, Serializable {
 
     /**
      * World position of the object in continuous coordinates.
@@ -109,7 +109,7 @@ public abstract class AbstractObjectBase<I> implements Renderable, Serializable 
         this.direction = direction == null ? new Vector2D(1, 0) : direction;
         this.width = width < 1 ? 20 : width;
         this.height = height < 1 ? 20 : height;
-        this.hitBox = new HitBox(getXRound(), getYRound(), getWidth(), getHeight());
+        this.hitBox = new HitBox(this.position.getXRound(), this.position.getYRound(), getWidth(), getHeight());
         this.timeCreated = System.currentTimeMillis();
         this.uuid = UUID.randomUUID();
     }
@@ -163,30 +163,12 @@ public abstract class AbstractObjectBase<I> implements Renderable, Serializable 
     }
 
     /**
-     * Returns the rounded X coordinate of {@link #position}.
-     *
-     * @return rounded X (integer)
-     */
-    public int getXRound() {
-        return Math.toIntExact(Math.round(position.getX()));
-    }
-
-    /**
-     * Returns the rounded Y coordinate of {@link #position}.
-     *
-     * @return rounded Y (integer)
-     */
-    public int getYRound() {
-        return Math.toIntExact(Math.round(position.getY()));
-    }
-
-    /**
      * Getter for the hitbox of this object.
      * @return the hitbox updated with the current position and size of this object
      */
     public HitBox getHitBox() {
-        hitBox.setX(getXRound());
-        hitBox.setY(getYRound());
+        hitBox.setX(position.getXRound());
+        hitBox.setY(position.getYRound());
         hitBox.setWidth(getWidth());
         hitBox.setHeight(getHeight());
 

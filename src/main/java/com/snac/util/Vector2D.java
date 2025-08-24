@@ -197,4 +197,22 @@ public class Vector2D implements Serializable {
     public String toString() {
         return String.format("Vector2D(x=%.3f, y=%.3f)", x, y);
     }
+
+    /**
+     * Returns the rounded X coordinate of this vector.
+     *
+     * @return rounded X (integer)
+     */
+    public int getXRound() {
+        return Math.toIntExact(Math.round(x));
+    }
+
+    /**
+     * Returns the rounded Y coordinate of this vector.
+     *
+     * @return rounded Y (integer)
+     */
+    public int getYRound() {
+        return Math.toIntExact(Math.round(y));
+    }
 }

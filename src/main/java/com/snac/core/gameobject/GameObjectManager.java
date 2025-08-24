@@ -48,7 +48,7 @@ public class GameObjectManager {
      * Create a new {@link GameObjectManager} instance.
      * @param renderer The {@link Renderer} used to render the game objects.
      */
-    public GameObjectManager(Renderer renderer) {
+    public GameObjectManager(Renderer<?, ?> renderer) {
         this.gameObjects = Collections.synchronizedSet(new HashSet<>());
         this.rwLock = new ReentrantReadWriteLock();
         this.renderer = renderer;

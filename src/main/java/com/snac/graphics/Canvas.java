@@ -22,9 +22,9 @@ import java.util.stream.Stream;
  * Also see {@link Renderer} and {@link Renderable} for more information.
  */
 // TODO: Move renderables which are out of sight to seperated list and move them back again if they're in sight. Performanceeeeee
-public class Canvas {
-    protected final List<Renderable> renderables;
-    protected final List<Renderable> renderBuffer;
+public class Canvas<I, F> {
+    protected final List<Renderable<I, F>> renderables;
+    protected final List<Renderable<I, F>> renderBuffer;
     protected final ReadWriteLock rwLock;
 
     /**
@@ -41,7 +41,7 @@ public class Canvas {
      *
      * @param renderable The renderable you want to add
      */
-    public void addRenderable(final Renderable renderable) {
+    public void addRenderable(final Renderable<I, F> renderable) {
         renderables.add(renderable);
         sortRenderables();
     }
@@ -51,7 +51,7 @@ public class Canvas {
      *
      * @param renderable The renderable you want to remove
      */
-    public void removeRenderable(final Renderable renderable) {
+    public void removeRenderable(final Renderable<I, F> renderable) {
         renderables.remove(renderable);
         sortRenderables();
     }
@@ -61,7 +61,7 @@ public class Canvas {
      *
      * @return A copy of the renderables-list from the canvas
      */
-    public List<Renderable> getRenderables() {
+    public List<Renderable<I, F>> getRenderables() {
         rwLock.readLock().lock();
         try {
             return List.copyOf(renderables);
@@ -73,7 +73,7 @@ public class Canvas {
     /**
      * @return The renderables used by the Canvas as stream
      */
-    public Stream<Renderable> streamRenderables() {
+    public Stream<Renderable<I, F>> streamRenderables() {
         rwLock.readLock().lock();
         try {
             return new ArrayList<>(renderables).stream();
@@ -124,7 +124,7 @@ public class Canvas {
      *
      * @param brush The brush which is passed on to every renderable
      */
-    public void render(Brush<?, ?> brush) {
+    public void render(Brush<I, F> brush) {
         rwLock.readLock().lock();
         try {
             renderBuffer.clear();

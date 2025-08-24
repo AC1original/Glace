@@ -11,6 +11,8 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
+import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
@@ -24,7 +26,7 @@ public final class Glace {
     public static final Glace INSTANCE = new Glace();
 
     private ImageLoader<?> imageLoader;
-    private Renderer renderer;
+    private Renderer<?, ?> renderer;
     private GameObjectManager objectManager;
 
     private final Loop loop;

@@ -6,10 +6,11 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.awt.*;
+import java.io.Serializable;
 
 @Getter
 @Setter
-public class HitBox implements Renderable {
+public class HitBox implements Renderable<Object, Object>, Serializable {
     private int x;
     private int y;
     private int width;
@@ -70,7 +71,7 @@ public class HitBox implements Renderable {
     }
 
     @Override
-    public void render(Brush<?, ?> brush) {
+    public void render(Brush<Object, Object> brush) {
         brush.drawRectangle(x, y, width, height, false);
     }
 
