@@ -21,11 +21,11 @@ import java.util.stream.Stream;
  * </p>
  * Also see {@link Renderer} and {@link Renderable} for more information.
  */
-// TODO: Move renderables which are out of sight to seperated list and move them back again if they're in sight. Performanceeeeee
 public class Canvas<I, F> {
     protected final List<Renderable<I, F>> renderables;
     protected final List<Renderable<I, F>> renderBuffer;
     protected final ReadWriteLock rwLock;
+    protected boolean dirty = false;
 
     /**
      * Creates a new Canvas instance.
@@ -117,6 +117,7 @@ public class Canvas<I, F> {
         } finally {
             rwLock.writeLock().unlock();
         }
+        dirty = true;
     }
 
     /**
@@ -125,20 +126,22 @@ public class Canvas<I, F> {
      * @param brush The brush which is passed on to every renderable
      */
     public void render(Brush<I, F> brush) {
-        rwLock.readLock().lock();
-        try {
-            renderBuffer.clear();
-            renderBuffer.addAll(renderables);
-        } finally {
-            rwLock.readLock().unlock();
+        if (dirty) {
+            rwLock.readLock().lock();
+            try {
+                renderBuffer.clear();
+                renderBuffer.addAll(renderables);
+            } finally {
+                rwLock.readLock().unlock();
+            }
         }
 
         renderBuffer.stream()
                 .filter(Renderable::visible)
                 .forEach(r -> {
                     r.render(brush);
-                    if (r instanceof AbstractObjectBase<?>) {
-                        ((AbstractObjectBase<?>) r).onRender(brush);
+                    if (r instanceof AbstractObjectBase<?> aOb) {
+                        aOb.onRender(brush);
                     }
                 });
     }

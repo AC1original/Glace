@@ -26,7 +26,6 @@ import java.util.UUID;
  *
  * @param <I> Type of the visual asset associated with this object (e.g., image or sprite handle).
  */
-//TODO: New feature. Attach other objects to this object.
 @Getter
 public abstract class AbstractObjectBase<I> implements Renderable<I, Void>, Serializable {
 

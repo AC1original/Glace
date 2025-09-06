@@ -18,9 +18,9 @@ public abstract class Animation<I> implements Renderable<I, Void> {
     public abstract boolean drawAnimation();
     public abstract void onFrameChange(AnimationFrame<?> frame);
 
-    public void onPlay() {}
-    public void onStop() {}
-    public void onPause() {}
+    protected void onPlay() {}
+    protected void onStop() {}
+    protected void onPause() {}
 
     public boolean checkValidation() {
         return getFrames().length > 0;
@@ -62,5 +62,10 @@ public abstract class Animation<I> implements Renderable<I, Void> {
         var location = getLocation(frame);
 
         brush.drawImage(frame.getImage(), location.getXRound(), location.getYRound(), frame.getWidth(), frame.getHeight());
+    }
+
+    public void pause() {
+        this.paused = true;
+        onPause();
     }
 }

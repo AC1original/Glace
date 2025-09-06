@@ -12,7 +12,6 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.awt.*;
-import java.awt.image.BufferedImage;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
@@ -66,7 +65,7 @@ public final class Glace {
                     this.currentGameLoopFPS = fps;
                 },
                 () -> {
-                    log.warn("Game loop stopped. On purpose, bug or just skill issue?");
+                    log.warn("Game loop stopped. On purpose? Bug? Or just skill issue?");
                     shutdownHooks.forEach(Runnable::run);
                 });
     }
