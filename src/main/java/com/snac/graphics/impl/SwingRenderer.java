@@ -202,33 +202,38 @@ public class SwingRenderer extends JPanel implements Renderer<BufferedImage, Fon
     public void render() {
         if (getFrame() == null
                 || getFrame().getState() == JFrame.ICONIFIED
-                || getCanvas() == null
-                || getBufferStrategy() == null) {
+                || getCanvas() == null) {
             return;
         }
 
-        do {
-            Graphics2D g = null;
-            try {
-                g = (Graphics2D) getBufferStrategy().getDrawGraphics();
-                g.clearRect(0, 0, getWidth(), getHeight());
-
-                g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-
-                brush.setGraphics(g);
-                getCanvas().render(brush);
-            } finally {
-                if (g != null) {
-                    g.dispose();
-                }
+        if (getBufferStrategy() == null) {
+            if (getFrame().isDisplayable() && getFrame().getWidth() > 0 && getFrame().getHeight() > 0) {
+                getFrame().createBufferStrategy(2);
+                bufferStrategy = getFrame().getBufferStrategy();
+            } else {
+                return;
             }
+        }
 
-            Toolkit.getDefaultToolkit().sync();
+        if (!bufferStrategy.contentsLost() && bufferStrategy.getDrawGraphics() != null) {
+            do {
+                Graphics2D g = null;
+                try {
+                    g = (Graphics2D) bufferStrategy.getDrawGraphics();
+                    g.clearRect(0, 0, getWidth(), getHeight());
 
-            getBufferStrategy().show();
+                    brush.setGraphics(g);
+                    getCanvas().render(brush);
 
-        } while (getBufferStrategy().contentsLost());
+                } finally {
+                    if (g != null) g.dispose();
+                }
+
+                Toolkit.getDefaultToolkit().sync();
+                bufferStrategy.show();
+
+            } while (bufferStrategy.contentsLost());
+        }
     }
 
     @Override

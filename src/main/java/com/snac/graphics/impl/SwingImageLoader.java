@@ -20,8 +20,8 @@ public class SwingImageLoader extends ImageLoader<BufferedImage> {
     static {
         FALLBACK_IMAGE = new BufferedImage(2, 2, BufferedImage.TYPE_INT_ARGB);
 
-        FALLBACK_IMAGE.setRGB(0, 0, Color.PINK.getRGB());
-        FALLBACK_IMAGE.setRGB(0, 1, Color.PINK.getRGB());
+        FALLBACK_IMAGE.setRGB(0, 0, Color.MAGENTA.getRGB());
+        FALLBACK_IMAGE.setRGB(0, 1, Color.MAGENTA.getRGB());
         FALLBACK_IMAGE.setRGB(1, 0, Color.BLACK.getRGB());
         FALLBACK_IMAGE.setRGB(1, 1, Color.BLACK.getRGB());
     }
@@ -40,6 +40,7 @@ public class SwingImageLoader extends ImageLoader<BufferedImage> {
 
             image = ImageIO.read(stream);
             log.info("Loaded image from: {}", path);
+            return image;
         } catch (Exception e) {
             log.warn("Failed to load image from: '{}' | '{}'. Returned fallback image", path, e.toString());
         }

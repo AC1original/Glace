@@ -13,6 +13,7 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
@@ -25,10 +26,10 @@ import java.util.Set;
 public final class Glace {
     public static final Glace INSTANCE = new Glace();
 
-    private ImageLoader<?> imageLoader;
-    private Renderer<?, ?> renderer;
+    private SwingImageLoader imageLoader;
+    private SwingRenderer renderer;
     private GameObjectManager objectManager;
-    private AnimationHandler<?, ?> animationHandler;
+    private AnimationHandler<BufferedImage, Font> animationHandler;
 
     private final Loop loop;
     private final LocalDateTime startTime;

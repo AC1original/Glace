@@ -16,8 +16,8 @@ public abstract class Animation<I, F> implements Renderable<I, F> {
     public abstract AnimationFrame<I>[] getFrames();
     public abstract int getDelay();
     public abstract boolean drawAnimation();
-    public abstract void onFrameChange(AnimationFrame<?> frame);
 
+    protected void onFrameChange(AnimationFrame<?> frame) {}
     protected void onPlay() {}
     protected void onStop() {}
     protected void onPause() {}
@@ -32,7 +32,7 @@ public abstract class Animation<I, F> implements Renderable<I, F> {
             var delay = frame.getDelay() > 0 ? frame.getDelay() : getDelay();
 
             if (getLastFrameChange() <= 0 || System.currentTimeMillis() - getLastFrameChange() >= delay) {
-                index = index < getFrames().length ? index + 1 : 0;
+                index = index < getFrames().length-1 ? index + 1 : 0;
                 onFrameChange(getFrames()[index]);
             }
         }
