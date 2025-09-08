@@ -31,12 +31,6 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.github.AC1original</groupId>
-            <artifactId>Ez2log</artifactId>
-            <version>78dc4d0</version>
-        </dependency>
-
-        <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
             <version>2.0.17</version>
@@ -53,6 +47,12 @@
             <artifactId>lombok</artifactId>
             <version>1.18.38</version>
             <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jetbrains</groupId>
+            <artifactId>annotations</artifactId>
+            <version>24.0.0</version>
         </dependency>
 
         <!-- LWJGL dependencies -->

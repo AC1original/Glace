@@ -1,7 +1,6 @@
 package com.snac.graphics.impl;
 
 import com.snac.graphics.ImageLoader;
-import de.snac.Ez2Log;
 import io.github.humbleui.skija.*;
 
 /**
@@ -48,14 +47,14 @@ public class SkijaImageLoader extends ImageLoader<Image> {
     public Image load(String path) {
         try (var stream = getClass().getClassLoader().getResourceAsStream(path)) {
             if (stream == null) {
-                Ez2Log.warn(this, "Image not found in classpath: " + path + ". Returned fallback image.");
+                //Ez2Log.warn(this, "Image not found in classpath: " + path + ". Returned fallback image.");
                 return FALLBACK_IMAGE;
             }
 
             byte[] data = stream.readAllBytes();
             return Image.makeDeferredFromEncodedBytes(data);
         } catch (Exception e) {
-            Ez2Log.warn(this, "Failed to load image from " + path + ". Returned fallback image.");
+            //Ez2Log.warn(this, "Failed to load image from " + path + ". Returned fallback image.");
             return FALLBACK_IMAGE;
         }
     }

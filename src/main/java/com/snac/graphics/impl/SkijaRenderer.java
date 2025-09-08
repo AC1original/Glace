@@ -4,7 +4,6 @@ import com.snac.graphics.Brush;
 import com.snac.graphics.Canvas;
 import com.snac.graphics.Renderer;
 import com.snac.util.Loop;
-import de.snac.Ez2Log;
 import io.github.humbleui.skija.*;
 import io.github.humbleui.skija.impl.Stats;
 import lombok.Getter;
@@ -21,7 +20,6 @@ import org.lwjgl.opengl.GL;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
 /**
  * Implementation of {@link Renderer} based on Skija and LWJGL. See {@link Renderer}-Interface for more information.
@@ -76,7 +74,7 @@ public class SkijaRenderer implements Renderer {
             throw new IllegalStateException("Unable to initialize GLFW");
         }
 
-        Ez2Log.info(this, "Initialized");
+        //Ez2Log.info(this, "Initialized");
     }
 
     private void updateDimensions() {
@@ -101,7 +99,7 @@ public class SkijaRenderer implements Renderer {
     @Override
     public void createWindow(int width, int height, @NotNull String title) {
         if (window != 0) {
-            Ez2Log.warn(this, "Could not create window, only one window per renderer is allowed.");
+            //Ez2Log.warn(this, "Could not create window, only one window per renderer is allowed.");
             return;
         }
 
@@ -113,7 +111,7 @@ public class SkijaRenderer implements Renderer {
         }
 
         updateDimensions();
-        Ez2Log.info(this, "Created window. Starting render loop");
+        //Ez2Log.info(this, "Created window. Starting render loop");
 
         startRenderLoop();
     }
@@ -139,7 +137,7 @@ public class SkijaRenderer implements Renderer {
                     initSkija();
                     render();
                 });
-                Ez2Log.info(this, "Initialized Skija");
+                //Ez2Log.info(this, "Initialized Skija");
                 initSkija();
             }
         };
@@ -153,7 +151,7 @@ public class SkijaRenderer implements Renderer {
 
                 if (glfwWindowShouldClose(window)) {
                     loop.stop();
-                    Ez2Log.info(this, "LWJGL has been terminated");
+                    //Ez2Log.info(this, "LWJGL has been terminated");
                 }
             }
         };
@@ -171,7 +169,7 @@ public class SkijaRenderer implements Renderer {
                     context.close();
                 }
 
-                Ez2Log.info(this, "Shutting down render loop");
+                //Ez2Log.info(this, "Shutting down render loop");
             }
         };
 
@@ -237,7 +235,7 @@ public class SkijaRenderer implements Renderer {
     @Override
     public void destroyWindow() {
         if (window == 0) {
-            Ez2Log.warn(this, "Could not destroy window, window is not initialized");
+            //Ez2Log.warn(this, "Could not destroy window, window is not initialized");
             return;
         }
         glfwSetWindowShouldClose(window, true);
