@@ -185,14 +185,6 @@ public class SwingBrush implements Brush<BufferedImage, Font> {
     }
 
     /**
-     * See {@link Brush#getSize()}
-     */
-    @Override
-    public float getSize() {
-        return size;
-    }
-
-    /**
      * See {@link Brush#setSize(float)}
      */
     @Override

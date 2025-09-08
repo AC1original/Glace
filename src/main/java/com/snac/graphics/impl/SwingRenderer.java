@@ -30,7 +30,7 @@ import java.util.function.BiConsumer;
 public class SwingRenderer extends JPanel implements Renderer<BufferedImage, Font> {
     @Nullable protected JFrame frame;
     @Nullable protected BufferStrategy bufferStrategy;
-    protected volatile Canvas<BufferedImage, Font> canvas;
+    @Setter protected volatile Canvas<BufferedImage, Font> canvas;
     protected volatile int maxFps;
     protected volatile int fps;
     protected final ExecutorService executor;
@@ -164,22 +164,6 @@ public class SwingRenderer extends JPanel implements Renderer<BufferedImage, Fon
         this.frame = null;
 
         log.info("Destroyed JFrame");
-    }
-
-    /**
-     * See {@link Renderer#setCanvas(Canvas)}
-     */
-    @Override
-    public void setCanvas(Canvas<BufferedImage, Font> canvas) {
-        this.canvas = canvas;
-    }
-
-    /**
-     * See {@link Renderer#getCanvas()}
-     */
-    @Override
-    public Canvas<BufferedImage, Font> getCanvas() {
-        return canvas;
     }
 
     /**
