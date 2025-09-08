@@ -6,7 +6,7 @@ import com.snac.util.Vector2D;
 import lombok.Getter;
 
 @Getter
-public abstract class Animation<I> implements Renderable<I, Void> {
+public abstract class Animation<I, F> implements Renderable<I, F> {
     protected int counter = 0;
     protected int index = 0;
     protected boolean paused = false;
@@ -55,7 +55,7 @@ public abstract class Animation<I> implements Renderable<I, Void> {
     }
 
     @Override
-    public void render(Brush<I, Void> brush) {
+    public void render(Brush<I, F> brush) {
         if (!drawAnimation()) return;
 
         var frame = getFrames()[index];

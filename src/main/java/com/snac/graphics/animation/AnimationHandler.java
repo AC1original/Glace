@@ -13,14 +13,14 @@ import java.util.List;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 @Slf4j
-public class AnimationHandler<I> {
-    private final List<Animation<I>> animations;
+public class AnimationHandler<I, F> {
+    private final List<Animation<I, F>> animations;
     @Getter
     @Setter
-    private Canvas<?, ?> canvas;
+    private Canvas<I, F> canvas;
     private final ReentrantReadWriteLock lock;
 
-    public AnimationHandler(Renderer<?, ?> renderer) {
+    public AnimationHandler(Renderer<I, F> renderer) {
         this.animations = Collections.synchronizedList(new ArrayList<>());
         this.canvas = renderer.getCanvas();
         this.lock = new ReentrantReadWriteLock();
@@ -28,7 +28,7 @@ public class AnimationHandler<I> {
         log.info("Initialized");
     }
 
-    public void play(Animation<I> animation) {
+    public void play(Animation<I, F> animation) {
         if (!animation.checkValidation()) {
             log.warn("Couldn't play animation {}. Animation validation failed!", animation.getClass().getSimpleName());
         }
@@ -38,8 +38,8 @@ public class AnimationHandler<I> {
         log.info("Animation {} started", animation.getClass().getSimpleName());
     }
 
-    public void stopByClass(Class<? extends Animation<I>> animationClass) {
-        List<Animation<I>> snapshot;
+    public void stopByClass(Class<? extends Animation<I, F>> animationClass) {
+        List<Animation<I, F>> snapshot;
         synchronized (animations) {
             snapshot = new ArrayList<>(animations);
             snapshot.stream()
@@ -48,7 +48,7 @@ public class AnimationHandler<I> {
         }
     }
 
-    public void stop(Animation<I> animation) {
+    public void stop(Animation<I, F> animation) {
         if (animations.contains(animation)) {
             animations.remove(animation);
             canvas.removeRenderable(animation);
@@ -57,14 +57,14 @@ public class AnimationHandler<I> {
         log.info("Animation {} stopped", animation.getClass().getSimpleName());
     }
 
-    public List<Animation<?>> getAnimations() {
+    public List<Animation<?, ?>> getAnimations() {
         return List.copyOf(animations);
     }
 
     public void tick() {
         lock.readLock().lock();
-        TryCatch.tryFinally(() -> {
-            animations.forEach(Animation::updateIndex);
-        }, () -> lock.readLock().unlock());
+        TryCatch.tryFinally(
+                () -> animations.forEach(Animation::updateIndex),
+                () -> lock.readLock().unlock());
     }
 }
