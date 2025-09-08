@@ -12,6 +12,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+/**
+ * Class to manage Animations. Animations created by extending {@link Animation} can be added to this class
+ * and will be rendered by the {@link Canvas} of the {@link Renderer} which is passed to the constructor.
+ * <p>It is important to pass the <b>same generic types as used in the {@link Renderer}</b> you use.</p>
+ * @param <I> Image type
+ * @param <F> Font type
+ */
 @Slf4j
 public class AnimationHandler<I, F> {
     private final List<Animation<I, F>> animations;
@@ -20,6 +27,13 @@ public class AnimationHandler<I, F> {
     private Canvas<I, F> canvas;
     private final ReentrantReadWriteLock lock;
 
+    /**
+     * Creates a new AnimationHandler instance. Normally you only need one instance for your whole project.<br>
+     * <b>Please note:</b> Creating an instance is not enough for this handler to work.
+     * You need to call the {@link #tick()} method every tick so the animations can update their indices.
+     * @param renderer The renderer this handler should use to render the animations.
+     *                As mentioned before, generic types of the renderer must match the types used in this class.
+     */
     public AnimationHandler(Renderer<I, F> renderer) {
         this.animations = Collections.synchronizedList(new ArrayList<>());
         this.canvas = renderer.getCanvas();
@@ -28,6 +42,10 @@ public class AnimationHandler<I, F> {
         log.info("Initialized");
     }
 
+    /**
+     * Plays the given animation.
+     * @param animation the animation to play
+     */
     public void play(Animation<I, F> animation) {
         if (!animation.checkValidation()) {
             log.warn("Couldn't play animation {}. Animation validation failed!", animation.getClass().getSimpleName());
@@ -38,6 +56,10 @@ public class AnimationHandler<I, F> {
         log.info("Animation {} started", animation.getClass().getSimpleName());
     }
 
+    /**
+     * Stops all animations of the given class. Calls {@link Animation#onStop()} on each animation.
+     * @param animationClass the class of the animations to stop
+     */
     public void stopByClass(Class<? extends Animation<I, F>> animationClass) {
         List<Animation<I, F>> snapshot;
         synchronized (animations) {
@@ -48,6 +70,11 @@ public class AnimationHandler<I, F> {
         }
     }
 
+    /**
+     * Stops the given animation. Calls {@link Animation#onStop()} on the animation.<br>
+     * Remember to stop animations which aren't needed at the moment to save resources.
+     * @param animation the animation to stop
+     */
     public void stop(Animation<I, F> animation) {
         if (animations.contains(animation)) {
             animations.remove(animation);
@@ -57,10 +84,17 @@ public class AnimationHandler<I, F> {
         log.info("Animation {} stopped", animation.getClass().getSimpleName());
     }
 
+    /**
+     * @return A copy of the list of animations managed by this handler.
+     */
     public List<Animation<?, ?>> getAnimations() {
         return List.copyOf(animations);
     }
 
+    /**
+     * This method must be called every tick to update the animation indices. <b>Otherwise, this handler won't display animations correctly</b><br>
+     * It is recommended to tick this method in the default game loop (calculation loop).
+     */
     public void tick() {
         lock.readLock().lock();
         TryCatch.tryFinally(
