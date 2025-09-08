@@ -3,6 +3,7 @@ package com.snac.core;
 import com.snac.core.gameobject.GameObjectManager;
 import com.snac.graphics.ImageLoader;
 import com.snac.graphics.Renderer;
+import com.snac.graphics.animation.AnimationHandler;
 import com.snac.graphics.impl.SwingImageLoader;
 import com.snac.graphics.impl.SwingRenderer;
 import com.snac.util.Loop;
@@ -27,6 +28,7 @@ public final class Glace {
     private ImageLoader<?> imageLoader;
     private Renderer<?, ?> renderer;
     private GameObjectManager objectManager;
+    private AnimationHandler<?, ?> animationHandler;
 
     private final Loop loop;
     private final LocalDateTime startTime;
@@ -34,13 +36,13 @@ public final class Glace {
     private int currentGameLoopFPS = 0;
     private final Set<Runnable> shutdownHooks;
 
-    public void init() {
-        imageLoader = new SwingImageLoader();
-        renderer = new SwingRenderer();
-        objectManager = new GameObjectManager(renderer);
+    public void start() {
+        start(20);
+    }
 
-        startGameLoop();
+    public void start(int tps) {
         log.info("Initialized");
+        startGameLoop();
     }
 
     private Glace() {
@@ -51,10 +53,16 @@ public final class Glace {
                 .runOnThread(true)
                 .threadName("Glace-main")
                 .build();
+
+        imageLoader = new SwingImageLoader();
+        renderer = new SwingRenderer(60, null, null);
+        objectManager = new GameObjectManager(renderer);
+        animationHandler = new AnimationHandler<>(renderer);
     }
 
     public void tick(double deltaTime) {
         objectManager.tick(deltaTime);
+        animationHandler.tick();
     }
 
     private void startGameLoop() {

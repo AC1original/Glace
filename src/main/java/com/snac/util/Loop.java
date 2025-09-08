@@ -26,6 +26,7 @@ public class Loop {
     protected ExecutorService executorService;
     protected final List<BiConsumer<Integer, Double>> joinedActions;
     protected final ReentrantReadWriteLock rwLock;
+    protected double deltaTime = 0;
 
     /**
      * There are two ways to create a new Loop instance:
@@ -116,6 +117,7 @@ public class Loop {
                     long now = System.nanoTime();
                     long elapsed = now - lastTime;
                     double deltaTime = elapsed / 1_000_000_000.0;
+                    this.deltaTime = deltaTime;
 
                     if (System.currentTimeMillis() - secCount >= 1_000) {
                         secCount = System.currentTimeMillis();

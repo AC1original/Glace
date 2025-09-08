@@ -56,7 +56,7 @@ public interface Brush<I, F> {
     void drawArc(int x, int y, int width, int height, int startAngle, int arcAngle, boolean filled);
 
     /**
-     * Draws an line from P(x1 | y1) to P(x2 | y2)
+     * Draws a line from P(x1 | y1) to P(x2 | y2)
      * @param x1 Startpoint X-Pos
      * @param y1 Startpoint Y-Pos
      * @param x2 Endpoint X-Pos

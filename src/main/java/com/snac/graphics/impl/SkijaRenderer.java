@@ -312,4 +312,9 @@ public class SkijaRenderer implements Renderer {
     public int getFPS() {
         return fps;
     }
+
+    @Override
+    public double getDeltaTime() {
+        return 0;
+    }
 }

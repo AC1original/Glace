@@ -68,6 +68,11 @@ public interface Renderer<I, F> {
     int getFPS();
 
     /**
+     * @return the delta time between the last render and the current render.
+     */
+    double getDeltaTime();
+
+    /**
      * This method renders the current Canvas
      */
     void render();

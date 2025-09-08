@@ -1,6 +1,5 @@
 package com.snac.graphics.impl;
 
-import com.snac.graphics.Brush;
 import com.snac.graphics.Canvas;
 import com.snac.graphics.Renderer;
 import com.snac.util.Loop;
@@ -22,8 +21,8 @@ import java.util.function.BiConsumer;
 /**
  * Implementation of {@link Renderer} based on Swing. See {@link Renderer}-Interface for more information.
  * <p>
- *     The easiest way to modify the rendering process is by using {@link #setPreRender(Runnable)}, {@link #setRenderLoopAction(BiConsumer)} or {@link #setPostRender(Runnable)}<br>
- *     Otherwise, you can just extend this class or write your own renderer with the {@link Renderer Renderer interface}
+ * The easiest way to modify the rendering process is by using {@link #setPreRender(Runnable)}, {@link #setRenderLoopAction(BiConsumer)} or {@link #setPostRender(Runnable)}<br>
+ * Otherwise, you can extend this class or write your own renderer with the {@link Renderer Renderer interface}
  * </p>
  */
 @Getter
@@ -31,12 +30,12 @@ import java.util.function.BiConsumer;
 public class SwingRenderer extends JPanel implements Renderer<BufferedImage, Font> {
     @Nullable protected JFrame frame;
     @Nullable protected BufferStrategy bufferStrategy;
-    @Setter protected volatile Canvas<BufferedImage, Font> canvas;
-    @Setter protected volatile int maxFPS;
-    protected volatile int FPS;
+    protected volatile Canvas<BufferedImage, Font> canvas;
+    protected volatile int maxFps;
+    protected volatile int fps;
     protected final ExecutorService executor;
     protected final Loop loop;
-    protected Brush<BufferedImage, Font> brush;
+    protected SwingBrush brush;
     @Setter protected Runnable preRender;
     @Setter protected Runnable postRender;
     @Setter protected BiConsumer<Integer, Double> renderLoopAction;
@@ -50,15 +49,16 @@ public class SwingRenderer extends JPanel implements Renderer<BufferedImage, Fon
 
     /**
      * Constructor... You know how those work - at least I hope so
-     * @param maxFPS The maximum FPS the renderer should render on
-     * @param canvas Sets the {@link Canvas}. By setting this to {@code null} a new {@link Canvas} will be created
+     *
+     * @param maxFPS   The maximum FPS the renderer should render on
+     * @param canvas   Sets the {@link Canvas}. By setting this to {@code null} a new {@link Canvas} will be created
      * @param executor The executor this renderer should run on.
      *                 By setting this to {@code null} this renderer will use the thread the window is created on for the render-loop,
      *                 which is not recommended as this will block the entire thread.
      */
     public SwingRenderer(int maxFPS, @Nullable Canvas<BufferedImage, Font> canvas, @Nullable ExecutorService executor) {
         this.canvas = canvas == null ? new Canvas<>() : canvas;
-        this.maxFPS = maxFPS <= 0 ? 60 : maxFPS;
+        this.maxFps = maxFPS <= 0 ? 60 : maxFPS;
         this.executor = executor;
 
         this.loop = Loop.builder()
@@ -66,11 +66,12 @@ public class SwingRenderer extends JPanel implements Renderer<BufferedImage, Fon
                 .threadName("Swing-Rendering")
                 .build();
 
-        preRender = () -> {};
+        preRender = () -> {
+        };
         postRender = () -> log.info("Shutting down render loop");
         renderLoopAction = (fps, deltaTime) -> {
-          this.FPS = fps;
-          render();
+            this.fps = fps;
+            render();
         };
 
         log.info("Initialized");
@@ -86,6 +87,9 @@ public class SwingRenderer extends JPanel implements Renderer<BufferedImage, Fon
             log.warn("Could not create window, only one window per renderer is allowed.");
             return;
         }
+
+        System.setProperty("sun.java2d.opengl", "true");
+
         this.frame = new JFrame();
 
         frame.setTitle(title);
@@ -94,9 +98,20 @@ public class SwingRenderer extends JPanel implements Renderer<BufferedImage, Fon
         frame.setLocationRelativeTo(null);
         frame.add(this);
         frame.setVisible(true);
-        frame.createBufferStrategy(2);
+        frame.validate();
+        frame.requestFocus();
 
-        this.bufferStrategy = frame.getBufferStrategy();
+        SwingUtilities.invokeLater(() -> {
+            frame.createBufferStrategy(2);
+
+            this.bufferStrategy = frame.getBufferStrategy();
+            this.setDoubleBuffered(false);
+
+            brush = new SwingBrush(bufferStrategy.getDrawGraphics());
+
+            startRenderLoop();
+        });
+
 
         frame.addWindowListener(new WindowAdapter() {
             @Override
@@ -105,20 +120,15 @@ public class SwingRenderer extends JPanel implements Renderer<BufferedImage, Fon
                 log.info("JFrame has been terminated");
             }
         });
-
-        brush = new SwingBrush(bufferStrategy.getDrawGraphics());
-
-        startRenderLoop();
     }
 
     protected void startRenderLoop() {
-        var exec = Executors.newSingleThreadExecutor();
         if (!loop.isRunOnThread()) {
-            exec.execute(() -> {
-                loop.start(preRender, maxFPS, renderLoopAction, postRender);
+            executor.execute(() -> {
+                loop.start(preRender, maxFps, renderLoopAction, postRender);
             });
         } else {
-            loop.start(preRender, maxFPS, renderLoopAction, postRender);
+            loop.start(preRender, maxFps, renderLoopAction, postRender);
         }
     }
 
@@ -157,22 +167,88 @@ public class SwingRenderer extends JPanel implements Renderer<BufferedImage, Fon
     }
 
     /**
+     * See {@link Renderer#setCanvas(Canvas)}
+     */
+    @Override
+    public void setCanvas(Canvas<BufferedImage, Font> canvas) {
+        this.canvas = canvas;
+    }
+
+    /**
+     * See {@link Renderer#getCanvas()}
+     */
+    @Override
+    public Canvas<BufferedImage, Font> getCanvas() {
+        return canvas;
+    }
+
+    /**
+     * See {@link Renderer#getMaxFPS()}
+     */
+    @Override
+    public int getMaxFPS() {
+        return maxFps;
+    }
+
+    /**
+     * See {@link Renderer#setMaxFPS(int)}
+     */
+    @Override
+    public void setMaxFPS(int fps) {
+        this.maxFps = fps;
+    }
+
+    /**
+     * See {@link Renderer#getFPS()}
+     */
+    @Override
+    public int getFPS() {
+        return fps;
+    }
+
+    @Override
+    public double getDeltaTime() {
+        return loop == null ? 0 : loop.getDeltaTime();
+    }
+
+    /**
      * See {@link Renderer#render()}
      */
     @Override
-    public synchronized void render() {
-        if (getFrame() == null || getCanvas() == null || getBufferStrategy() == null) {
+    public void render() {
+        if (getFrame() == null
+                || getFrame().getState() == JFrame.ICONIFIED
+                || getCanvas() == null
+                || getBufferStrategy() == null) {
             return;
         }
-        do {
-            do {
-                var graphics = getBufferStrategy().getDrawGraphics();
-                getCanvas().render(brush);
-                graphics.dispose();
 
-            } while (getBufferStrategy().contentsRestored());
+        do {
+            Graphics2D g = null;
+            try {
+                g = (Graphics2D) getBufferStrategy().getDrawGraphics();
+                g.clearRect(0, 0, getWidth(), getHeight());
+
+                g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+
+                brush.setGraphics(g);
+                getCanvas().render(brush);
+            } finally {
+                if (g != null) {
+                    g.dispose();
+                }
+            }
+
+            Toolkit.getDefaultToolkit().sync();
+
             getBufferStrategy().show();
 
         } while (getBufferStrategy().contentsLost());
+    }
+
+    @Override
+    protected void paintComponent(Graphics g) {
+        //Keep empty to prevent flickering
     }
 }
