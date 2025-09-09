@@ -7,15 +7,8 @@ import java.awt.*;
  * A Brush instance is passed to an {@link Renderable} by the used {@link Renderer} (or {@link Canvas})
  * <p>I recommend also looking at the named classes and their documentation.</p>
  * @param <I> Generic image
- * @param <F> Generic font
  */
-public interface Brush<I, F> {
-
-    /**
-     * Sets the font of the Brush
-     * @param font The font you want to set
-     */
-    void setFont(F font);
+public interface Brush<I> {
 
     /**
      * Sets the color of the Brush
@@ -85,16 +78,6 @@ public interface Brush<I, F> {
      * Same as {@link #drawRectangle(int, int, int, int, boolean)} but round
      */
     void drawRoundRect(int x, int y, int width, int height, int arcWidth, int arcHeight, boolean filled);
-
-    /**
-     * Draws a text.
-     * Use the {@link #setFont(Object)}-method
-     * (and depending on the Brush also {@link #setSize(float)}) to customize your text appearance
-     * @param text The text you want to draw
-     * @param x Text X-Pos on the window
-     * @param y Text Y-Pos on the window
-     */
-    void drawText(String text, int x, int y);
 
     /**
      * Draws one Pixel

@@ -15,16 +15,15 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 /**
  * Class to manage Animations. Animations created by extending {@link Animation} can be added to this class
  * and will be rendered by the {@link Canvas} of the {@link Renderer} which is passed to the constructor.
- * <p>It is important to pass the <b>same generic types as used in the {@link Renderer}</b> you use.</p>
+ * <p>It is important to pass the <b>same generic image type as used in the {@link Renderer}</b></p>
  * @param <I> Image type
- * @param <F> Font type
  */
 @Slf4j
-public class AnimationHandler<I, F> {
-    private final List<Animation<I, F>> animations;
+public class AnimationHandler<I> {
+    private final List<Animation<I>> animations;
     @Getter
     @Setter
-    private Canvas<I, F> canvas;
+    private Canvas<I> canvas;
     private final ReentrantReadWriteLock lock;
 
     /**
@@ -34,7 +33,7 @@ public class AnimationHandler<I, F> {
      * @param renderer The renderer this handler should use to render the animations.
      *                As mentioned before, generic types of the renderer must match the types used in this class.
      */
-    public AnimationHandler(Renderer<I, F> renderer) {
+    public AnimationHandler(Renderer<I> renderer) {
         this.animations = Collections.synchronizedList(new ArrayList<>());
         this.canvas = renderer.getCanvas();
         this.lock = new ReentrantReadWriteLock();
@@ -46,7 +45,7 @@ public class AnimationHandler<I, F> {
      * Plays the given animation.
      * @param animation the animation to play
      */
-    public void play(Animation<I, F> animation) {
+    public void play(Animation<I> animation) {
         if (!animation.checkValidation()) {
             log.warn("Couldn't play animation {}. Animation validation failed!", animation.getClass().getSimpleName());
         }
@@ -60,8 +59,8 @@ public class AnimationHandler<I, F> {
      * Stops all animations of the given class. Calls {@link Animation#onStop()} on each animation.
      * @param animationClass the class of the animations to stop
      */
-    public void stopByClass(Class<? extends Animation<I, F>> animationClass) {
-        List<Animation<I, F>> snapshot;
+    public void stopByClass(Class<? extends Animation<I>> animationClass) {
+        List<Animation<I>> snapshot;
         synchronized (animations) {
             snapshot = new ArrayList<>(animations);
             snapshot.stream()
@@ -75,7 +74,7 @@ public class AnimationHandler<I, F> {
      * Remember to stop animations which aren't needed at the moment to save resources.
      * @param animation the animation to stop
      */
-    public void stop(Animation<I, F> animation) {
+    public void stop(Animation<I> animation) {
         if (animations.contains(animation)) {
             animations.remove(animation);
             canvas.removeRenderable(animation);
@@ -87,7 +86,7 @@ public class AnimationHandler<I, F> {
     /**
      * @return A copy of the list of animations managed by this handler.
      */
-    public List<Animation<?, ?>> getAnimations() {
+    public List<Animation<?>> getAnimations() {
         return List.copyOf(animations);
     }
 

@@ -40,7 +40,7 @@ public class SkijaRenderer implements Renderer {
     private int height;
     @Setter
     private float dpi = 1f;
-    private Brush<?, ?> brush;
+    private Brush<?> brush;
     private DirectContext context;
     private BackendRenderTarget renderTarget;
     private Surface surface;

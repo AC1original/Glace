@@ -10,18 +10,11 @@ import lombok.Getter;
  * <p>
  * Animation instances must be registered in an {@link AnimationHandler} to be updated and rendered.
  * </p>
- * <p>
- * <b>Note:</b> Both generic types must match the types of the {@link com.snac.graphics.Renderer Renderer}
- * you are using.
- * </p>
  *
- * @param <I> The image type of the animation frames.
- * @param <F> The font type of the {@link com.snac.graphics.Renderer Renderer}.
- *            This type is not directly relevant for the animation itself,
- *            but it must match the renderer type for compatibility.
+ * @param <I> The image type of the animation frames. This must match the used {@link AnimationHandler} (and {@link com.snac.graphics.Renderer renderer}).
  */
 @Getter
-public abstract class Animation<I, F> implements Renderable<I, F> {
+public abstract class Animation<I> implements Renderable<I> {
     protected int counter = 0;
     protected int index = 0;
     protected boolean paused = false;
@@ -146,7 +139,7 @@ public abstract class Animation<I, F> implements Renderable<I, F> {
      * @param brush the brush used for rendering
      */
     @Override
-    public void render(Brush<I, F> brush) {
+    public void render(Brush<I> brush) {
         if (!drawAnimation()) return;
 
         var frame = getFrames()[index];

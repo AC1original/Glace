@@ -18,14 +18,15 @@ import java.util.stream.Stream;
  * <p>
  *     If you want to modify this class, feel free to do so.
  * </p>
+ * @param <I> Type of the visual asset associated with this object (e.g., image or sprite handle).
  */
 @Slf4j
-public class GameObjectManager {
+public class GameObjectManager<I> {
 
     /**
      * This {@link Set} contains all game objects managed by this manager.
      */
-    protected final Set<AbstractObjectBase<?>> gameObjects;
+    protected final Set<AbstractObjectBase<I>> gameObjects;
 
     /**
      * A {@link HitBox} used to find game objects at a given position.
@@ -42,13 +43,13 @@ public class GameObjectManager {
      * The {@link Renderer} used to render the game objects.
      */
     @Getter
-    protected final Renderer renderer;
+    protected final Renderer<I> renderer;
 
     /**
      * Create a new {@link GameObjectManager} instance.
      * @param renderer The {@link Renderer} used to render the game objects.
      */
-    public GameObjectManager(Renderer<?, ?> renderer) {
+    public GameObjectManager(Renderer<I> renderer) {
         this.gameObjects = Collections.synchronizedSet(new HashSet<>());
         this.rwLock = new ReentrantReadWriteLock();
         this.renderer = renderer;
@@ -62,7 +63,7 @@ public class GameObjectManager {
      * @param gameObject the game object to add
      * @return this manager instance, for chaining
      */
-    public GameObjectManager addGameObject(AbstractObjectBase<?> gameObject) {
+    public GameObjectManager<?> addGameObject(AbstractObjectBase<I> gameObject) {
         gameObjects.add(gameObject);
         gameObject.internalCreate(this);
         renderer.getCanvas().addRenderable(gameObject);
@@ -79,7 +80,7 @@ public class GameObjectManager {
      * @param gameObject the game object to destroy
      * @return this manager instance, for chaining
      */
-    public GameObjectManager destroyGameObject(AbstractObjectBase<?> gameObject) {
+    public GameObjectManager<?> destroyGameObject(AbstractObjectBase<I> gameObject) {
         gameObjects.remove(gameObject);
         gameObject.onDestroy();
         renderer.getCanvas().removeRenderable(gameObject);
@@ -111,7 +112,7 @@ public class GameObjectManager {
      * @param y The y coordinate
      * @return A list of game objects at the given position
      */
-    public synchronized List<AbstractObjectBase<?>> getObjectsAt(int x, int y) {
+    public synchronized List<AbstractObjectBase<I>> getObjectsAt(int x, int y) {
         posFinderHitBox.setX(x);
         posFinderHitBox.setY(y);
 
@@ -164,7 +165,7 @@ public class GameObjectManager {
      * Get a stream of all game objects.
      * @return A stream of all game objects
      */
-    public Stream<AbstractObjectBase<?>> streamObjects() {
+    public Stream<AbstractObjectBase<I>> streamObjects() {
         rwLock.readLock().lock();
         try {
             return new ArrayList<>(gameObjects).stream();
@@ -213,7 +214,7 @@ public class GameObjectManager {
      * @param gameObject The game object to check for collisions with
      * @return List of all game objects that collide with the given game object
      */
-    public List<AbstractObjectBase<?>> getCollisions(AbstractObjectBase<?> gameObject) {
+    public List<AbstractObjectBase<I>> getCollisions(AbstractObjectBase<?> gameObject) {
         if (!collides(gameObject)) {
             return Collections.emptyList();
         }

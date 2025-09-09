@@ -16,7 +16,7 @@ import java.awt.image.BufferedImage;
  */
 @Getter
 @Slf4j
-public class SwingBrush implements Brush<BufferedImage, Font> {
+public class SwingBrush implements Brush<BufferedImage> {
     @Setter protected Graphics2D graphics;
     protected final Graphics2D original;
     protected float size = 1;
@@ -36,9 +36,8 @@ public class SwingBrush implements Brush<BufferedImage, Font> {
     }
 
     /**
-     * See {@link Brush#setFont(Object)}
+     * Set the font you want to use for {@link #drawText(String, int, int)}
      */
-    @Override
     public void setFont(Font font) {
         graphics.setFont(font);
     }
@@ -136,9 +135,8 @@ public class SwingBrush implements Brush<BufferedImage, Font> {
     }
 
     /**
-     * See {@link Brush#drawText(String, int, int)}
+     * Draws text at the given position. Also see {@link #setFont(Font)}
      */
-    @Override
     public void drawText(String text, int x, int y) {
         graphics.drawString(text, x, y);
     }

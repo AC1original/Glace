@@ -1,7 +1,7 @@
 package com.snac.graphics;
 
 /**
- * This interface is for everything that needs to be drawn to screen.
+ * This interface is for everything that needs to be drawn to the screen.
  * Renderable-Objects can be added to any {@link Canvas}-instance.
  * <p>
  *     For example, any entity can implement this interface and added to an active canvas from any renderer
@@ -9,7 +9,7 @@ package com.snac.graphics;
  * </p>
  * Also see {@link Renderer}
  */
-public interface Renderable<I, F> {
+public interface Renderable<I> {
 
     /**
      * This method is called every frame.
@@ -26,7 +26,7 @@ public interface Renderable<I, F> {
      * <br>3. The used {@link Renderer} is running (Window got created, render loop is running)
      * @param brush The brush used for rendering. See the {@link Brush} class for more information.
      */
-    void render(Brush<I, F> brush);
+    void render(Brush<I> brush);
 
     /**
      * By overriding this method, you can decide if this Renderable is hidden or drawn.<br>
@@ -39,7 +39,7 @@ public interface Renderable<I, F> {
 
     /**
      * Sets the {@link Priority Priority} of this renderable.
-     * To change the order specific renderables get drawn (foreground, background, ...).<br>
+     * To change the order, specific renderables get drawn (foreground, background, ...).<br>
      * For example, HUD elements can be set to {@code HIGH}, background to {@code LOW}, menus to {@code HIGHEST}
      * <br>Confused? Just don't override this method or set it to {@code DEFAULT}.
      * @return the priority you want to set this Renderable to
@@ -72,9 +72,9 @@ public interface Renderable<I, F> {
 
         /**
          * @param priority The priority you want to know if it's lower.
-         * @return {@code true} if the parameter priority is higher, {@code false} if the parameter priority is lower
+         * @return {@code true} if the parameter priority is lower, {@code false} if the parameter priority is higher
          */
-        public boolean isHigherThan(Priority priority) {
+        public boolean isHigherThen(Priority priority) {
             return this.compareTo(priority) > 0;
         }
     }

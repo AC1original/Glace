@@ -27,10 +27,10 @@ import java.util.function.BiConsumer;
  */
 @Getter
 @Slf4j
-public class SwingRenderer extends JPanel implements Renderer<BufferedImage, Font> {
+public class SwingRenderer extends JPanel implements Renderer<BufferedImage> {
     @Nullable protected JFrame frame;
     @Nullable protected BufferStrategy bufferStrategy;
-    @Setter protected volatile Canvas<BufferedImage, Font> canvas;
+    @Setter protected volatile Canvas<BufferedImage> canvas;
     protected volatile int maxFps;
     protected volatile int fps;
     protected final ExecutorService executor;
@@ -56,7 +56,7 @@ public class SwingRenderer extends JPanel implements Renderer<BufferedImage, Fon
      *                 By setting this to {@code null} this renderer will use the thread the window is created on for the render-loop,
      *                 which is not recommended as this will block the entire thread.
      */
-    public SwingRenderer(int maxFPS, @Nullable Canvas<BufferedImage, Font> canvas, @Nullable ExecutorService executor) {
+    public SwingRenderer(int maxFPS, @Nullable Canvas<BufferedImage> canvas, @Nullable ExecutorService executor) {
         this.canvas = canvas == null ? new Canvas<>() : canvas;
         this.maxFps = maxFPS <= 0 ? 60 : maxFPS;
         this.executor = executor;

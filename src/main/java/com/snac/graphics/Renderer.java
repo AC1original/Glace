@@ -11,7 +11,7 @@ package com.snac.graphics;
  *     This Canvas renders every {@link Renderable} it contains.
  * </p>
  */
-public interface Renderer<I, F> {
+public interface Renderer<I> {
 
     /**
      * Creates a new window.
@@ -44,12 +44,12 @@ public interface Renderer<I, F> {
      * Set a new {@link Canvas}
      * @param canvas The new canvas
      */
-    void setCanvas(Canvas<I, F> canvas);
+    void setCanvas(Canvas<I> canvas);
 
     /**
      * @return Current canvas the renderer uses
      */
-    Canvas<I, F> getCanvas();
+    Canvas<I> getCanvas();
 
     /**
      * @return Current maximum FPS the renderer is running on

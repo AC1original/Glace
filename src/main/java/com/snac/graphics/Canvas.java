@@ -21,9 +21,9 @@ import java.util.stream.Stream;
  * </p>
  * Also see {@link Renderer} and {@link Renderable} for more information.
  */
-public class Canvas<I, F> {
-    protected final List<Renderable<I, F>> renderables;
-    protected final List<Renderable<I, F>> renderBuffer;
+public class Canvas<I> {
+    protected final List<Renderable<I>> renderables;
+    protected final List<Renderable<I>> renderBuffer;
     protected final ReadWriteLock rwLock;
     protected boolean dirty = false;
 
@@ -41,7 +41,7 @@ public class Canvas<I, F> {
      *
      * @param renderable The renderable you want to add
      */
-    public void addRenderable(final Renderable<I, F> renderable) {
+    public void addRenderable(final Renderable<I> renderable) {
         renderables.add(renderable);
         sortRenderables();
     }
@@ -51,7 +51,7 @@ public class Canvas<I, F> {
      *
      * @param renderable The renderable you want to remove
      */
-    public void removeRenderable(final Renderable<I, F> renderable) {
+    public void removeRenderable(final Renderable<I> renderable) {
         renderables.remove(renderable);
         sortRenderables();
     }
@@ -61,7 +61,7 @@ public class Canvas<I, F> {
      *
      * @return A copy of the renderables-list from the canvas
      */
-    public List<Renderable<I, F>> getRenderables() {
+    public List<Renderable<I>> getRenderables() {
         rwLock.readLock().lock();
         try {
             return List.copyOf(renderables);
@@ -73,7 +73,7 @@ public class Canvas<I, F> {
     /**
      * @return The renderables used by the Canvas as stream
      */
-    public Stream<Renderable<I, F>> streamRenderables() {
+    public Stream<Renderable<I>> streamRenderables() {
         rwLock.readLock().lock();
         try {
             return new ArrayList<>(renderables).stream();
@@ -125,7 +125,7 @@ public class Canvas<I, F> {
      *
      * @param brush The brush which is passed on to every renderable
      */
-    public void render(Brush<I, F> brush) {
+    public void render(Brush<I> brush) {
         if (dirty) {
             rwLock.readLock().lock();
             try {

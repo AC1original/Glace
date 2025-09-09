@@ -10,7 +10,7 @@ import java.io.Serializable;
 
 @Getter
 @Setter
-public class HitBox implements Renderable<Object, Object>, Serializable {
+public class HitBox implements Renderable<Object>, Serializable {
     private int x;
     private int y;
     private int width;
@@ -71,7 +71,7 @@ public class HitBox implements Renderable<Object, Object>, Serializable {
     }
 
     @Override
-    public void render(Brush<Object, Object> brush) {
+    public void render(Brush<Object> brush) {
         brush.drawRectangle(x, y, width, height, false);
     }
 

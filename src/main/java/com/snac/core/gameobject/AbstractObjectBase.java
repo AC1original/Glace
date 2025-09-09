@@ -27,7 +27,7 @@ import java.util.UUID;
  * @param <I> Type of the visual asset associated with this object (e.g., image or sprite handle).
  */
 @Getter
-public abstract class AbstractObjectBase<I> implements Renderable<I, Void>, Serializable {
+public abstract class AbstractObjectBase<I> implements Renderable<I>, Serializable {
 
     /**
      * World position of the object in continuous coordinates.
@@ -81,7 +81,7 @@ public abstract class AbstractObjectBase<I> implements Renderable<I, Void>, Seri
      * May be {@code null} this object gets initialized with a {@link GameObjectManager}
      */
     @Nullable
-    private GameObjectManager manager;
+    private GameObjectManager<I> manager;
 
     /**
      * Creates an object with a default position (0|0), default direction (1|0),
@@ -118,7 +118,7 @@ public abstract class AbstractObjectBase<I> implements Renderable<I, Void>, Seri
      *
      * @param brush drawing context provided by the renderer
      */
-    public abstract void onRender(Brush<?, ?> brush);
+    public abstract void onRender(Brush<?> brush);
 
     /**
      * Update hook invoked by the framework.
@@ -156,7 +156,7 @@ public abstract class AbstractObjectBase<I> implements Renderable<I, Void>, Seri
      *
      * @param gameObjectManager the manager responsible for this object
      */
-    void internalCreate(GameObjectManager gameObjectManager) {
+    void internalCreate(GameObjectManager<I> gameObjectManager) {
         this.manager = gameObjectManager;
         this.onCreate();
     }

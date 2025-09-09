@@ -25,7 +25,7 @@ import java.awt.Color;
  */
 @Getter
 @Deprecated
-public class SkijaBrush implements Brush<Image, Font> {
+public class SkijaBrush implements Brush<Image> {
     private final Canvas skijaCanvas;
     private final long window;
     private final Paint paint;
@@ -50,10 +50,6 @@ public class SkijaBrush implements Brush<Image, Font> {
         this.paint = new Paint();
     }
 
-    /**
-     * See {@link Brush#setFont(Object)}
-     */
-    @Override
     public void setFont(Font font) {
         this.font = font;
     }
@@ -149,10 +145,6 @@ public class SkijaBrush implements Brush<Image, Font> {
         skijaCanvas.drawRRect(RRect.makeXYWH(x, y, width, height, arcWidth, arcHeight), paint);
     }
 
-    /**
-     * See {@link Brush#drawText(String, int, int)}
-     */
-    @Override
     public void drawText(String text, int x, int y) {
         short[] glyphs = font.getStringGlyphs(text);
 

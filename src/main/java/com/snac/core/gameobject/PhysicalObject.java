@@ -18,7 +18,7 @@ public abstract class PhysicalObject<I> extends AbstractObjectBase<I> {
         this.velocity = new Vector2D(0, 0);
     }
 
-    public void onCollide(List<AbstractObjectBase<?>> collidedObjects) {}
+    public void onCollide(List<AbstractObjectBase<I>> collidedObjects) {}
 
     @Override
     void internalUpdate(double deltaTime) {

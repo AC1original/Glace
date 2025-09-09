@@ -28,8 +28,8 @@ public final class Glace {
 
     private SwingImageLoader imageLoader;
     private SwingRenderer renderer;
-    private GameObjectManager objectManager;
-    private AnimationHandler<BufferedImage, Font> animationHandler;
+    private GameObjectManager<BufferedImage> objectManager;
+    private AnimationHandler<BufferedImage> animationHandler;
 
     private final Loop loop;
     private final LocalDateTime startTime;
@@ -57,7 +57,7 @@ public final class Glace {
 
         imageLoader = new SwingImageLoader();
         renderer = new SwingRenderer(60, null, null);
-        objectManager = new GameObjectManager(renderer);
+        objectManager = new GameObjectManager<>(renderer);
         animationHandler = new AnimationHandler<>(renderer);
     }
 
