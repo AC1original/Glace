@@ -75,6 +75,14 @@ public class GameObjectManager<I> {
         return this;
     }
 
+    public GameObjectManager<?> destroyGameObject(UUID uuid) {
+        var gameObject = getGameObjectFromUUID(uuid);
+        if (gameObject != null) {
+            destroyGameObject(gameObject);
+        }
+        return this;
+    }
+
     /**
      * Destroy a game object from this manager.
      * @param gameObject the game object to destroy
@@ -180,7 +188,7 @@ public class GameObjectManager<I> {
      * @return The game object with the given UUID, or {@code null} if no such object exists
      */
     @Nullable
-    public AbstractObjectBase<?> getGameObjectFromUUID(UUID uuid) {
+    public AbstractObjectBase<I> getGameObjectFromUUID(UUID uuid) {
         rwLock.readLock().lock();
         try {
             return gameObjects
