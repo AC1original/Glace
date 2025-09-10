@@ -28,6 +28,8 @@ import java.io.Serializable;
 public class Vector2D implements Serializable {
     private double x;
     private double y;
+    private double oldX;
+    private double oldY;
 
     /**
      * Constructs a new Vector2D with the specified x and y components.
@@ -38,6 +40,7 @@ public class Vector2D implements Serializable {
     public Vector2D(double x, double y) {
         this.x = x;
         this.y = y;
+        set(this.x, this.y);
     }
 
     /**
@@ -46,8 +49,9 @@ public class Vector2D implements Serializable {
      * @param other the vector to copy
      */
     public Vector2D(Vector2D other) {
-        this.x = other.x;
-        this.y = other.y;
+        set(other.x, other.y);
+        oldX = other.oldX;
+        oldY = other.oldY;
     }
 
     /**
@@ -56,9 +60,8 @@ public class Vector2D implements Serializable {
      * @param other the vector to add
      * @return this vector after addition
      */
-    public Vector2D add(Vector2D other) {
-        this.x += other.x;
-        this.y += other.y;
+    public synchronized Vector2D add(Vector2D other) {
+        set(this.x+other.x, this.y+other.y);
         return this;
     }
 
@@ -68,9 +71,8 @@ public class Vector2D implements Serializable {
      * @param other the vector to subtract
      * @return this vector after subtraction
      */
-    public Vector2D subtract(Vector2D other) {
-        this.x -= other.x;
-        this.y -= other.y;
+    public synchronized Vector2D subtract(Vector2D other) {
+        set(this.x-other.x, this.y-other.y);
         return this;
     }
 
@@ -80,9 +82,8 @@ public class Vector2D implements Serializable {
      * @param scalar the scalar to multiply by
      * @return this vector after multiplication
      */
-    public Vector2D multiply(double scalar) {
-        this.x *= scalar;
-        this.y *= scalar;
+    public synchronized Vector2D multiply(double scalar) {
+        set(this.x*scalar, this.y*scalar);
         return this;
     }
 
@@ -95,12 +96,11 @@ public class Vector2D implements Serializable {
      * @param scalar the scalar to divide by
      * @return this vector after division
      */
-    public Vector2D divide(double scalar) {
+    public synchronized Vector2D divide(double scalar) {
         if (scalar == 0) {
             log.error("Division by zero", new ArithmeticException("Division by zero"));
         }
-        this.x /= scalar;
-        this.y /= scalar;
+        set(this.x/scalar, this.y/scalar);
         return this;
     }
 
@@ -109,10 +109,22 @@ public class Vector2D implements Serializable {
      *
      * @return this vector after negation
      */
-    public Vector2D negate() {
-        this.x = -this.x;
-        this.y = -this.y;
+    public synchronized Vector2D negate() {
+        set(-this.x, -this.y);
         return this;
+    }
+
+    /**
+     * Sets the x and y components of this vector. <br>
+     * This method is for overriding to implement actions on change.
+     * @param x new x value
+     * @param y new y value
+     */
+    public synchronized void set(double x, double y) {
+        oldX = this.x;
+        oldY = this.y;
+        this.x = x;
+        this.y = y;
     }
 
     /**
@@ -123,7 +135,7 @@ public class Vector2D implements Serializable {
      *
      * @return this vector after normalization
      */
-    public Vector2D normalize() {
+    public synchronized Vector2D normalize() {
         final double length = length();
         if (length == 0) return this;
         return divide(length);
@@ -134,7 +146,7 @@ public class Vector2D implements Serializable {
      *
      * @return the length of the vector
      */
-    public double length() {
+    public synchronized double length() {
         return Math.sqrt(x * x + y * y);
     }
 
@@ -147,7 +159,7 @@ public class Vector2D implements Serializable {
      *
      * @return the squared length of the vector
      */
-    public double lengthSquared() {
+    public synchronized double lengthSquared() {
         return x * x + y * y;
     }
 
@@ -157,7 +169,7 @@ public class Vector2D implements Serializable {
      * @param other the other vector
      * @return the distance between the two vectors
      */
-    public double distanceTo(Vector2D other) {
+    public synchronized double distanceTo(Vector2D other) {
         double dx = this.x - other.x;
         double dy = this.y - other.y;
         return Math.sqrt(dx * dx + dy * dy);
@@ -173,7 +185,7 @@ public class Vector2D implements Serializable {
      * @return {@code true} if equal, {@code false} otherwise
      */
     @Override
-    public boolean equals(Object obj) {
+    public synchronized boolean equals(Object obj) {
         if (!(obj instanceof Vector2D other)) return false;
 
         return Double.compare(x, other.x) == 0 && Double.compare(y, other.y) == 0;
@@ -184,7 +196,7 @@ public class Vector2D implements Serializable {
      *
      * @return a new Vector2D with the same components as this one
      */
-    public Vector2D copy() {
+    public synchronized Vector2D copy() {
         return new Vector2D(this);
     }
 
@@ -194,7 +206,7 @@ public class Vector2D implements Serializable {
      * @return formatted string like {@code Vector2D(x=1.234, y=5.678)}
      */
     @Override
-    public String toString() {
+    public synchronized String toString() {
         return String.format("Vector2D(x=%.3f, y=%.3f)", x, y);
     }
 
@@ -203,7 +215,7 @@ public class Vector2D implements Serializable {
      *
      * @return rounded X (integer)
      */
-    public int getXRound() {
+    public synchronized int getXRound() {
         return Math.toIntExact(Math.round(x));
     }
 
@@ -212,7 +224,7 @@ public class Vector2D implements Serializable {
      *
      * @return rounded Y (integer)
      */
-    public int getYRound() {
+    public synchronized int getYRound() {
         return Math.toIntExact(Math.round(y));
     }
 }
