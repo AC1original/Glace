@@ -4,11 +4,15 @@ import com.snac.graphics.Brush;
 import com.snac.graphics.Renderable;
 import com.snac.util.HitBox;
 import com.snac.util.Vector2D;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.Serializable;
+import java.util.Collections;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -26,8 +30,21 @@ import java.util.UUID;
  *
  * @param <I> Type of the visual asset associated with this object (e.g., image or sprite handle).
  */
+@Slf4j
 @Getter
 public abstract class AbstractObjectBase<I> implements Renderable<I>, Serializable {
+
+    /**
+     * Set of objects attached to this object.
+     */
+    @Getter(AccessLevel.NONE)
+    protected final Set<AbstractObjectBase<I>> attachments;
+
+    /**
+     * Object this object is attached to, or {@code null} if not attached.
+     */
+    @Nullable
+    protected AbstractObjectBase<I> attachesTo;
 
     /**
      * World position of the object in continuous coordinates.
@@ -42,12 +59,12 @@ public abstract class AbstractObjectBase<I> implements Renderable<I>, Serializab
     protected final Vector2D direction;
 
     /**
-     * Object width in pixels. A minimum of 20 is enforced when constructed.
+     * Object width in pixels.
      */
     protected int width;
 
     /**
-     * Object height in pixels. A minimum of 20 is enforced when constructed.
+     * Object height in pixels.
      */
     protected int height;
 
@@ -104,14 +121,41 @@ public abstract class AbstractObjectBase<I> implements Renderable<I>, Serializab
      * @param height    desired height in pixels; values < 1 resolve to 20
      */
     protected AbstractObjectBase(@Nullable Vector2D position, @Nullable Vector2D direction, int width, int height) {
-        this.position = position == null ? new Vector2D(0, 0) : position;
-        this.direction = direction == null ? new Vector2D(1, 0) : direction;
+        this.position = new Vector2D(position == null ? new Vector2D(0, 0) : position) {
+            @Override
+            public void set(double x, double y) {
+                onPositionChange(x, y);
+                super.set(x, y);
+            }};
+        this.direction = new Vector2D(direction == null ? new Vector2D(1, 0) : direction) {
+            @Override
+            public void set(double x, double y) {
+                onDirectionChange(x, y);
+                super.set(x, y);
+            }};
+        this.attachments = Collections.synchronizedSet(Set.of());
         this.width = width < 1 ? 20 : width;
         this.height = height < 1 ? 20 : height;
         this.hitBox = new HitBox(this.position.getXRound(), this.position.getYRound(), getWidth(), getHeight());
         this.timeCreated = System.currentTimeMillis();
         this.uuid = UUID.randomUUID();
     }
+
+    /**
+     * Callback method invoked whenever the position of this object changes.
+     * <p>
+     * Subclasses can override this method to perform custom logic or trigger
+     */
+    protected void onPositionChange(double newX, double newY) {
+        updateAttachments(position.getX(), position.getY(), newX, newY);
+    }
+
+    /**
+     * Callback method invoked whenever the direction of this object changes.
+     * <p>
+     * Subclasses can override this method to perform custom logic or trigger
+     */
+    protected void onDirectionChange(double newX, double newY) {}
 
     /**
      * Renders this object with the given brush.
@@ -172,5 +216,79 @@ public abstract class AbstractObjectBase<I> implements Renderable<I>, Serializab
         hitBox.setHeight(getHeight());
 
         return hitBox;
+    }
+
+    /**
+     * Updates the positions of all attached objects based on the movement of this object.
+     * <br>
+     * In other words, if this object moves, all its attachments get shifted by the same offset.
+     *
+     * <p>
+     * This method is called automatically by the framework whenever the object moves.
+     * You can override it in subclasses, though there's usually no good reason to.
+     * </p>
+     *
+     * @param oldX the old X position of this object
+     * @param oldY the old Y position of this object
+     * @param newX the new X position of this object
+     * @param newY the new Y position of this object
+     */
+    public void updateAttachments(double oldX, double oldY, double newX, double newY) {
+        synchronized (attachments) {
+            attachments.forEach(attachment -> {
+                attachment.position.set(
+                        attachment.position.getX() - oldX + newX,
+                        attachment.position.getY() - oldY + newY
+                );
+            });
+        }
+    }
+
+    /**
+     * Returns the attachments of this object.
+     *
+     * @return an unmodifiable copy of the current attachments set
+     */
+    public Set<AbstractObjectBase<I>> getAttachments() {
+        return Set.copyOf(attachments);
+    }
+
+    /**
+     * Attaches the given object to this object.
+     * <p>
+     * If the provided object is already attached to another object, no attachment will be made
+     * and a warning will be logged.
+     * </p>
+     * <p>
+     * <b>Note:</b> If the object is already attached to another object, you can obtain
+     * that object via {@link #getAttachesTo()} and detach it using
+     * {@link #detach(AbstractObjectBase)} before attempting to attach it again.
+     * </p>
+     *
+     * @param object the object to attach; must not already be attached to another object
+     */
+    public void attach(AbstractObjectBase<I> object) {
+        if (object.attachesTo != null) {
+            log.warn("Object {} is already attached to {}. It must be detached first.",
+                    object.getClass().getSimpleName(),
+                    object.attachesTo.getClass().getSimpleName());
+            return;
+        }
+        attachments.add(object);
+        object.attachesTo = this;
+    }
+
+    /**
+     * Detaches the specified object from this object.
+     * <p>
+     * This removes the object from this object's attachment set and clears
+     * its {@code attachesTo} reference.
+     * </p>
+     *
+     * @param object the object to be detached; must currently be attached to this object
+     */
+    public void detach(AbstractObjectBase<I> object) {
+        attachments.remove(object);
+        object.attachesTo = null;
     }
 }
