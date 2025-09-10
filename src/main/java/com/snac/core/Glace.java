@@ -43,7 +43,7 @@ public final class Glace {
 
     public void start(int tps) {
         log.info("Initialized");
-        startGameLoop();
+        startGameLoop(tps);
     }
 
     private Glace() {
@@ -66,9 +66,9 @@ public final class Glace {
         animationHandler.tick();
     }
 
-    private void startGameLoop() {
+    private void startGameLoop(int tps) {
         loop.start(() -> log.info("Starting game loop"),
-                20,
+                tps,
                 (fps, deltaTime) -> {
                     tick(deltaTime);
                     this.currentGameLoopFPS = fps;
