@@ -35,7 +35,7 @@ public class SwingImageLoader extends ImageLoader<BufferedImage> {
     @Override
     public BufferedImage load(String path) {
         BufferedImage image;
-        try(var stream = ImageLoader.class.getResourceAsStream(path)) {
+        try (var stream = ImageLoader.class.getResourceAsStream(path)) {
             if (stream == null) throw new FileNotFoundException("Ressource not found:" + path);
 
             image = ImageIO.read(stream);

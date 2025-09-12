@@ -28,17 +28,23 @@ import java.util.function.BiConsumer;
 @Getter
 @Slf4j
 public class SwingRenderer extends JPanel implements Renderer<BufferedImage> {
-    @Nullable protected JFrame frame;
-    @Nullable protected BufferStrategy bufferStrategy;
-    @Setter protected volatile Canvas<BufferedImage> canvas;
+    @Nullable
+    protected JFrame frame;
+    @Nullable
+    protected BufferStrategy bufferStrategy;
+    @Setter
+    protected volatile Canvas<BufferedImage> canvas;
     protected volatile int maxFps;
     protected volatile int fps;
     protected final ExecutorService executor;
     protected final Loop loop;
     protected SwingBrush brush;
-    @Setter protected Runnable preRender;
-    @Setter protected Runnable postRender;
-    @Setter protected BiConsumer<Integer, Double> renderLoopAction;
+    @Setter
+    protected Runnable preRender;
+    @Setter
+    protected Runnable postRender;
+    @Setter
+    protected BiConsumer<Integer, Double> renderLoopAction;
 
     /**
      * Empty constructor. Creates a new SwingRenderer instance with default values

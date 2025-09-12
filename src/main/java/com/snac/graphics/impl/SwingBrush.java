@@ -17,7 +17,8 @@ import java.awt.image.BufferedImage;
 @Getter
 @Slf4j
 public class SwingBrush implements Brush<BufferedImage> {
-    @Setter protected Graphics2D graphics;
+    @Setter
+    protected Graphics2D graphics;
     protected final Graphics2D original;
     protected float size = 1;
 
@@ -117,7 +118,7 @@ public class SwingBrush implements Brush<BufferedImage> {
     public void drawOval(int x, int y, int width, int height, boolean filled) {
         if (filled) {
             graphics.fillOval(x, y, width, height);
-        } else  {
+        } else {
             graphics.drawOval(x, y, width, height);
         }
     }
