@@ -31,23 +31,16 @@ public final class Glace {
     private GameObjectManager<BufferedImage> objectManager;
     private AnimationHandler<BufferedImage> animationHandler;
 
-    private final Loop loop;
+    @Setter(AccessLevel.NONE) private Loop loop;
     private final LocalDateTime startTime;
-    @Setter(AccessLevel.NONE)
-    private int currentGameLoopFPS = 0;
-    private final Set<Runnable> shutdownHooks;
+    private Set<Runnable> shutdownHooks;
+    @Setter(AccessLevel.NONE) private int currentGameLoopFPS = 0;
 
     public void start() {
         start(20);
     }
 
     public void start(int tps) {
-        log.info("Initialized");
-        startGameLoop(tps);
-    }
-
-    private Glace() {
-        startTime = LocalDateTime.now();
         shutdownHooks = Collections.synchronizedSet(new HashSet<>());
 
         loop = Loop.builder()
@@ -59,6 +52,15 @@ public final class Glace {
         renderer = new SwingRenderer(60, null, null);
         objectManager = new GameObjectManager<>(renderer);
         animationHandler = new AnimationHandler<>(renderer);
+
+        log.info("Initialized");
+        startGameLoop(tps);
+    }
+
+    private Glace() {
+        startTime = LocalDateTime.now();
+
+        //Register or init annotations and general stuff
     }
 
     public void tick(double deltaTime) {
