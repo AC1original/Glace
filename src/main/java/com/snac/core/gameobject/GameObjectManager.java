@@ -16,8 +16,9 @@ import java.util.stream.Stream;
  * This class is thread safe (at least I hope so) and does all the work related to game objects for you.
  *
  * <p>
- *     If you want to modify this class, feel free to do so.
+ * If you want to modify this class, feel free to do so.
  * </p>
+ *
  * @param <I> Type of the visual asset associated with this object (e.g., image or sprite handle).
  */
 @Slf4j
@@ -47,6 +48,7 @@ public class GameObjectManager<I> {
 
     /**
      * Create a new {@link GameObjectManager} instance.
+     *
      * @param renderer The {@link Renderer} used to render the game objects.
      */
     public GameObjectManager(Renderer<I> renderer) {
@@ -60,6 +62,7 @@ public class GameObjectManager<I> {
 
     /**
      * Add a new game object to this manager.
+     *
      * @param gameObject the game object to add
      * @return this manager instance, for chaining
      */
@@ -85,6 +88,7 @@ public class GameObjectManager<I> {
 
     /**
      * Destroy a game object from this manager.
+     *
      * @param gameObject the game object to destroy
      * @return this manager instance, for chaining
      */
@@ -103,6 +107,7 @@ public class GameObjectManager<I> {
     /**
      * This method ensures that all game objects are updated.
      * This method must be called every calculation cycle, maybe from the main {@link com.snac.util.Loop}.
+     *
      * @param deltaTime the time passed since the last update
      */
     public synchronized void tick(double deltaTime) {
@@ -116,6 +121,7 @@ public class GameObjectManager<I> {
 
     /**
      * Get all game objects at a given position.
+     *
      * @param x The x coordinate
      * @param y The y coordinate
      * @return A list of game objects at the given position
@@ -137,6 +143,7 @@ public class GameObjectManager<I> {
 
     /**
      * Check if a game object with a given UUID exists.
+     *
      * @param uuid The UUID to check
      * @return {@code true} if the UUID exists, otherwise {@code false}
      */
@@ -146,6 +153,7 @@ public class GameObjectManager<I> {
 
     /**
      * Check if a given game object exists.
+     *
      * @param gameObject The game object to check
      * @return {@code true} if the game object exists, otherwise {@code false}
      */
@@ -155,6 +163,7 @@ public class GameObjectManager<I> {
 
     /**
      * Get a list of all game object UUIDs.
+     *
      * @return A list of all game object UUIDs
      */
     public List<UUID> getGameObjectUuids() {
@@ -171,6 +180,7 @@ public class GameObjectManager<I> {
 
     /**
      * Get a stream of all game objects.
+     *
      * @return A stream of all game objects
      */
     public Stream<AbstractObjectBase<I>> streamObjects() {
@@ -184,6 +194,7 @@ public class GameObjectManager<I> {
 
     /**
      * Get a game object from a given UUID.
+     *
      * @param uuid The UUID to search for
      * @return The game object with the given UUID, or {@code null} if no such object exists
      */
@@ -203,6 +214,7 @@ public class GameObjectManager<I> {
 
     /**
      * Check if a given game object collides with any other game object.
+     *
      * @param gameObject The game object to check for collisions with
      * @return {@code true} if the game object collides with any other game object, otherwise {@code false}
      */
@@ -219,6 +231,7 @@ public class GameObjectManager<I> {
 
     /**
      * Get a list of all game objects that collide with a given game object.
+     *
      * @param gameObject The game object to check for collisions with
      * @return List of all game objects that collide with the given game object
      */
@@ -242,6 +255,7 @@ public class GameObjectManager<I> {
      * Get a list of all game objects managed by this manager.
      * This list is a copy of the internal list,
      * so modifications to the returned list will not affect the internal list.
+     *
      * @return A list of all game objects managed by this manager
      */
     public List<AbstractObjectBase<?>> getGameObjects() {

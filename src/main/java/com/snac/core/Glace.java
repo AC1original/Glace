@@ -29,11 +29,13 @@ public final class Glace {
     private GameObjectManager<BufferedImage> objectManager;
     private AnimationHandler<BufferedImage> animationHandler;
 
-    @Setter(AccessLevel.NONE) private Loop loop;
+    @Setter(AccessLevel.NONE)
+    private Loop loop;
+    @Setter(AccessLevel.NONE)
+    private int currentGameLoopFPS = 0;
     private boolean started = false;
     private final LocalDateTime startTime;
     private Set<Runnable> shutdownHooks;
-    @Setter(AccessLevel.NONE) private int currentGameLoopFPS = 0;
 
     public void start() {
         start(20);
