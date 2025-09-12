@@ -6,23 +6,25 @@ package com.snac.graphics;
  * If you want to have more windows, you need to have more Renderer(-Instances)
  * <p>Use this interface if you want to create your own Glace-renderer.</p>
  * <p>
- *     Short explanation how rendering works here:<br>
- *     {@link Renderer} renders the current set {@link Canvas}.
- *     This Canvas renders every {@link Renderable} it contains.
+ * Short explanation how rendering works here:<br>
+ * {@link Renderer} renders the current set {@link Canvas}.
+ * This Canvas renders every {@link Renderable} it contains.
  * </p>
  */
 public interface Renderer<I> {
 
     /**
      * Creates a new window.
-     * @param width The window width
+     *
+     * @param width  The window width
      * @param height The window height
-     * @param title The windows title
+     * @param title  The windows title
      */
     void createWindow(int width, int height, String title);
 
     /**
      * Move the window to a specific position
+     *
      * @param x The new window X-Position
      * @param y The new window Y-Position
      */
@@ -30,7 +32,8 @@ public interface Renderer<I> {
 
     /**
      * Resize the window.
-     * @param width The new window width
+     *
+     * @param width  The new window width
      * @param height The new window height
      */
     void resizeWindow(int width, int height);
@@ -42,6 +45,7 @@ public interface Renderer<I> {
 
     /**
      * Set a new {@link Canvas}
+     *
      * @param canvas The new canvas
      */
     void setCanvas(Canvas<I> canvas);
@@ -58,6 +62,7 @@ public interface Renderer<I> {
 
     /**
      * Sets the maximum fps. This value must be higher than 0
+     *
      * @param fps The new maximum fps
      */
     void setMaxFPS(int fps);
