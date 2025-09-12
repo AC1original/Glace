@@ -17,10 +17,10 @@ public interface Renderable<I> {
      * The frame rate depends on the one set for the renderer
      * that renders the canvas this {@code Renderable} was added to (by default 60 FPS).
      * <p>
-     * It is not recommended to use this method for calculations or any non-rendering logic as this would block the render-loop.
-     * <b>Recommendation: Use separated loops for rendering and calculations.</b>
+     * It is not recommended to use this method for calculations or any non-rendering logic as this would block the render-loop.<br>
+     * The best way is to just use separated loops for rendering and calculations.
      * </p>
-     * As this is the only required method, you can implement this interface directly using a lambda. You're welcome :)
+     * Since this is the only non-optional method, you can implement this interface directly using a lambda. You're welcome :)
      * <br><br>Not working? Please check:
      * <br>1. This renderable got added to any {@link Canvas}
      * <br>2. The used {@link Canvas} is the current one set by the {@link Renderer} you want to render this on.
