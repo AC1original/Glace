@@ -61,12 +61,12 @@ public abstract class AbstractObjectBase<I> implements Renderable<I>, Serializab
     /**
      * Object width in pixels.
      */
-    protected int width;
+    protected volatile int width;
 
     /**
      * Object height in pixels.
      */
-    protected int height;
+    protected volatile int height;
 
     /**
      * Axis-aligned bounding box used for collision or spatial queries,
