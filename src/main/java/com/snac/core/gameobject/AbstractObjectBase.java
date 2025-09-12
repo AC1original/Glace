@@ -25,7 +25,7 @@ import java.util.UUID;
  *   <li>{@code internalCreate(manager)} is invoked by the framework to register the object and then call {@link #onCreate()}.</li>
  *   <li>{@code internalUpdate(deltaTime)} is invoked by the framework every tick and delegates to {@link #onUpdate(double)}.</li>
  * </ul>
- *
+ * <p>
  * To provide functionality for your game objects, you need to add them to a valid {@link GameObjectManager} instance.
  *
  * @param <I> Type of the visual asset associated with this object (e.g., image or sprite handle).
@@ -126,13 +126,15 @@ public abstract class AbstractObjectBase<I> implements Renderable<I>, Serializab
             public void set(double x, double y) {
                 onPositionChange(x, y);
                 super.set(x, y);
-            }};
+            }
+        };
         this.direction = new Vector2D(direction == null ? new Vector2D(1, 0) : direction) {
             @Override
             public void set(double x, double y) {
                 onDirectionChange(x, y);
                 super.set(x, y);
-            }};
+            }
+        };
         this.attachments = Collections.synchronizedSet(Set.of());
         this.width = width < 1 ? 20 : width;
         this.height = height < 1 ? 20 : height;
@@ -155,7 +157,8 @@ public abstract class AbstractObjectBase<I> implements Renderable<I>, Serializab
      * <p>
      * Subclasses can override this method to perform custom logic or trigger
      */
-    protected void onDirectionChange(double newX, double newY) {}
+    protected void onDirectionChange(double newX, double newY) {
+    }
 
     /**
      * Renders this object with the given brush.
@@ -207,6 +210,7 @@ public abstract class AbstractObjectBase<I> implements Renderable<I>, Serializab
 
     /**
      * Getter for the hitbox of this object.
+     *
      * @return the hitbox updated with the current position and size of this object
      */
     public HitBox getHitBox() {
