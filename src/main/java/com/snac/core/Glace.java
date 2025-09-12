@@ -1,8 +1,6 @@
 package com.snac.core;
 
 import com.snac.core.gameobject.GameObjectManager;
-import com.snac.graphics.ImageLoader;
-import com.snac.graphics.Renderer;
 import com.snac.graphics.animation.AnimationHandler;
 import com.snac.graphics.impl.SwingImageLoader;
 import com.snac.graphics.impl.SwingRenderer;
@@ -32,6 +30,7 @@ public final class Glace {
     private AnimationHandler<BufferedImage> animationHandler;
 
     @Setter(AccessLevel.NONE) private Loop loop;
+    private boolean started = false;
     private final LocalDateTime startTime;
     private Set<Runnable> shutdownHooks;
     @Setter(AccessLevel.NONE) private int currentGameLoopFPS = 0;
@@ -41,6 +40,13 @@ public final class Glace {
     }
 
     public void start(int tps) {
+        if (started) {
+            log.warn("Glace already started. Ignoring start request.");
+            return;
+        } else {
+            started = true;
+        }
+
         shutdownHooks = Collections.synchronizedSet(new HashSet<>());
 
         loop = Loop.builder()
@@ -63,6 +69,7 @@ public final class Glace {
         //Register or init annotations and general stuff
     }
 
+    //May throw null pointer if Galce was instantiated but not started
     public void tick(double deltaTime) {
         objectManager.tick(deltaTime);
         animationHandler.tick();
