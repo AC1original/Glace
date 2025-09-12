@@ -16,6 +16,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * Class to manage Animations. Animations created by extending {@link Animation} can be added to this class
  * and will be rendered by the {@link Canvas} of the {@link Renderer} which is passed to the constructor.
  * <p>It is important to pass the <b>same generic image type as used in the {@link Renderer}</b></p>
+ *
  * @param <I> Image type
  */
 @Slf4j
@@ -30,8 +31,9 @@ public class AnimationHandler<I> {
      * Creates a new AnimationHandler instance. Normally you only need one instance for your whole project.<br>
      * <b>Please note:</b> Creating an instance is not enough for this handler to work.
      * You need to call the {@link #tick()} method every tick so the animations can update their indices.
+     *
      * @param renderer The renderer this handler should use to render the animations.
-     *                As mentioned before, generic types of the renderer must match the types used in this class.
+     *                 As mentioned before, generic types of the renderer must match the types used in this class.
      */
     public AnimationHandler(Renderer<I> renderer) {
         this.animations = Collections.synchronizedList(new ArrayList<>());
@@ -43,6 +45,7 @@ public class AnimationHandler<I> {
 
     /**
      * Plays the given animation.
+     *
      * @param animation the animation to play
      */
     public void play(Animation<I> animation) {
@@ -57,6 +60,7 @@ public class AnimationHandler<I> {
 
     /**
      * Stops all animations of the given class. Calls {@link Animation#onStop()} on each animation.
+     *
      * @param animationClass the class of the animations to stop
      */
     public void stopByClass(Class<? extends Animation<I>> animationClass) {
@@ -72,6 +76,7 @@ public class AnimationHandler<I> {
     /**
      * Stops the given animation. Calls {@link Animation#onStop()} on the animation.<br>
      * Remember to stop animations which aren't needed at the moment to save resources.
+     *
      * @param animation the animation to stop
      */
     public void stop(Animation<I> animation) {

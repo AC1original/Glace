@@ -58,22 +58,26 @@ public abstract class Animation<I> implements Renderable<I> {
      *
      * @param frame the new frame
      */
-    protected void onFrameChange(AnimationFrame<?> frame) {}
+    protected void onFrameChange(AnimationFrame<?> frame) {
+    }
 
     /**
      * Called when the animation is started or resumed.
      */
-    protected void onPlay() {}
+    protected void onPlay() {
+    }
 
     /**
      * Called when the animation is stopped.
      */
-    protected void onStop() {}
+    protected void onStop() {
+    }
 
     /**
      * Called when the animation is paused.
      */
-    protected void onPause() {}
+    protected void onPause() {
+    }
 
     /**
      * Checks if the animation is valid and can be updated.
