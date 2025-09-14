@@ -29,22 +29,66 @@ import java.util.UUID;
  * <p>
  * To provide functionality for your game objects, you need to add them to a valid {@link GameObjectManager} instance.
  *
+ * <p>
+ * <b>Note:</b> By removing unused objects via {@link GameObjectManager#destroyGameObject(AbstractObjectBase)} you can save resources.
+ * To implement such features you can use a cache (like {@link com.snac.data.runtime.caching.Cache Cache} with {@link com.snac.data.runtime.caching.CacheListener CacheListener} for custom functionality)
+ * </p>
+ *
  * @param <I> Type of the visual asset associated with this object (e.g., image or sprite handle).
  */
 @Slf4j
 @Getter
 public abstract class AbstractObjectBase<I> implements Renderable<I>, Serializable {
 
+    /**
+     * Maximum distance from the center of the window (created by the
+     * {@link com.snac.graphics.Renderer Renderer}) at which this object still gets updated.
+     * <p>
+     * If the distance is greater than this value, {@link #disabled} is set to {@code true}
+     * and {@link #onUpdate(double)} won't be called anymore.
+     * Moving the object back within range re-enables updates.
+     * </p>
+     * <p>
+     * Default value: {@code (screen size / 2) + object width + 200}.
+     * See also {@link #internalCreate(GameObjectManager)} and {@link #onPositionChange(double, double)}.
+     * </p>
+     * <p>
+     * Setting this to {@code 0} or lower disables the check, meaning the object
+     * always gets updated regardless of distance.
+     * </p>
+     */
     protected int tickDistance;
 
+    /**
+     * Similar to {@link #tickDistance}, but only affects rendering.
+     * <p>
+     * If the distance is exceeded, {@link #visible} is set to {@code false}.
+     * {@link #disabled} is not affected.
+     * </p>
+     * <p>
+     * Setting this to {@code 0} or lower disables the check, meaning the object
+     * is always rendered regardless of distance.
+     * </p>
+     */
     protected int renderDistance;
 
+    /**
+     * Whether this object is updated or not.
+     * If {@code true}, {@link #onUpdate(double)} will no longer be called.
+     * <p>
+     * See also {@link #tickDistance}, {@link #internalUpdate(double)} and
+     * {@link #onPositionChange(double, double)}.
+     * </p>
+     */
     protected boolean disabled;
 
     /**
-     * Set to {@code false} this object won't get rendered.<br>
-     *
-     * Also see {@link Renderable#visible()}
+     * Whether this object is rendered or not.
+     * If {@code false}, it won't be drawn.
+     * <p>
+     * See also {@link Renderable#visible()}, {@link #renderDistance} and
+     * {@link #onPositionChange(double, double)}.
+     * </p>
      */
     @Setter
     @Getter(AccessLevel.NONE)
