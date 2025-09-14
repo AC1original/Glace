@@ -254,6 +254,16 @@ public class SkijaRenderer implements Renderer {
         glfwSwapBuffers(window);
     }
 
+    @Override
+    public int getWindowWidth() {
+        return 0;
+    }
+
+    @Override
+    public int getWindowHeight() {
+        return 0;
+    }
+
     /**
      * Activate VSync. Also see {@link #isVSync()}
      * @param vsync Set to {@code true} VSync is activated, otherwise disabled
