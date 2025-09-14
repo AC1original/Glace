@@ -10,6 +10,7 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.Nullable;
 
+import java.awt.*;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.Set;
@@ -34,6 +35,21 @@ import java.util.UUID;
 @Getter
 public abstract class AbstractObjectBase<I> implements Renderable<I>, Serializable {
 
+    protected int tickDistance;
+
+    protected int renderDistance;
+
+    protected boolean disabled;
+
+    /**
+     * Set to {@code false} this object won't get rendered.<br>
+     *
+     * Also see {@link Renderable#visible()}
+     */
+    @Setter
+    @Getter(AccessLevel.NONE)
+    protected boolean visible;
+
     /**
      * Set of objects attached to this object.
      */
@@ -47,7 +63,10 @@ public abstract class AbstractObjectBase<I> implements Renderable<I>, Serializab
     protected AbstractObjectBase<I> attachesTo;
 
     /**
-     * World position of the object in continuous coordinates.
+     * Position of the object relative to the window the object is rendered on
+     * (Also see the {@link com.snac.graphics.Renderer Renderer} you are using
+     * ({@link com.snac.graphics.impl.SwingRenderer SwingRenderer} by default if you're using the default
+     * {@link com.snac.core.Glace Glace} configurations)).<br>
      * Never {@code null}; defaults to (0,0) if not provided.
      */
     protected final Vector2D position;
@@ -135,6 +154,8 @@ public abstract class AbstractObjectBase<I> implements Renderable<I>, Serializab
                 super.set(x, y);
             }
         };
+        this.disabled = false;
+        this.visible = true;
         this.attachments = Collections.synchronizedSet(Set.of());
         this.width = width < 1 ? 20 : width;
         this.height = height < 1 ? 20 : height;
@@ -144,12 +165,26 @@ public abstract class AbstractObjectBase<I> implements Renderable<I>, Serializab
     }
 
     /**
-     * Callback method invoked whenever the position of this object changes.
+     * Callback method invoked whenever the position of this object changes.<br>
+     * Used to implement logic for {@link #renderDistance} and {@link #tickDistance}
      * <p>
      * Subclasses can override this method to perform custom logic or trigger
      */
     protected void onPositionChange(double newX, double newY) {
         updateAttachments(position.getX(), position.getY(), newX, newY);
+        if (manager == null || manager.getRenderer().getWindowWidth() == Integer.MAX_VALUE) {
+            return;
+        }
+        var renderer =  manager.getRenderer();
+        var distance = Math.max(Math.abs(this.position.getXRound() - renderer.getWindowWidth() / 2),
+                Math.abs(this.position.getYRound() - renderer.getWindowHeight() / 2));
+
+        if (renderDistance > 0) {
+            visible = distance < renderDistance;
+        }
+        if (tickDistance > 0) {
+            disabled = distance > tickDistance;
+        }
     }
 
     /**
@@ -194,6 +229,7 @@ public abstract class AbstractObjectBase<I> implements Renderable<I>, Serializab
      * @param deltaTime time elapsed since the previous update
      */
     void internalUpdate(double deltaTime) {
+        if (disabled) return;
         onUpdate(deltaTime);
     }
 
@@ -205,6 +241,8 @@ public abstract class AbstractObjectBase<I> implements Renderable<I>, Serializab
      */
     void internalCreate(GameObjectManager<I> gameObjectManager) {
         this.manager = gameObjectManager;
+        this.tickDistance = (Toolkit.getDefaultToolkit().getScreenSize().width / 2) + getWidth() + 200;
+        this.renderDistance = tickDistance;
         this.onCreate();
     }
 
@@ -294,5 +332,10 @@ public abstract class AbstractObjectBase<I> implements Renderable<I>, Serializab
     public void detach(AbstractObjectBase<I> object) {
         attachments.remove(object);
         object.attachesTo = null;
+    }
+
+    @Override
+    public boolean visible() {
+        return visible;
     }
 }

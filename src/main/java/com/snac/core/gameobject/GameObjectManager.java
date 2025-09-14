@@ -16,6 +16,11 @@ import java.util.stream.Stream;
  * This class is thread safe (at least I hope so) and does all the work related to game objects for you.
  *
  * <p>
+ * <b>Important Note:</b> It is important to call {@link #tick(double)} every calculation cycle.
+ * <br>(Also see {@link com.snac.core.Glace Glace standard implementation})
+ * </p>
+ *
+ * <p>
  * If you want to modify this class, feel free to do so.
  * </p>
  *
