@@ -242,6 +242,22 @@ public class SwingRenderer extends JPanel implements Renderer<BufferedImage> {
         }
     }
 
+    /**
+     * See {@link Renderer#getWindowWidth()}
+     */
+    @Override
+    public int getWindowWidth() {
+        return frame == null ? Integer.MAX_VALUE : frame.getWidth();
+    }
+
+    /**
+     * See {@link Renderer#getWindowHeight()}
+     */
+    @Override
+    public int getWindowHeight() {
+        return frame == null ? Integer.MAX_VALUE : frame.getHeight();
+    }
+
     @Override
     protected void paintComponent(Graphics g) {
         //Keep empty to prevent flickering

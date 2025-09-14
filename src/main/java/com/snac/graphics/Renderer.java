@@ -73,7 +73,7 @@ public interface Renderer<I> {
     int getFPS();
 
     /**
-     * @return the delta time between the last render and the current render.
+     * @return the delta time between the last render and the current render
      */
     double getDeltaTime();
 
@@ -81,4 +81,14 @@ public interface Renderer<I> {
      * This method renders the current Canvas
      */
     void render();
+
+    /**
+     * @return the current width of the window. {@code Integer.MAX_VALUE} if no windows exists
+     */
+    int getWindowWidth();
+
+    /**
+     * @return the current width of the window. {@code Integer.MAX_VALUE} if no windows exists
+     */
+    int getWindowHeight();
 }
