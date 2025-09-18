@@ -1,6 +1,7 @@
 package com.snac.graphics.impl;
 
 import com.snac.graphics.Brush;
+import com.snac.graphics.Renderer;
 import io.github.humbleui.skija.*;
 import io.github.humbleui.skija.Canvas;
 import io.github.humbleui.skija.Font;
@@ -227,6 +228,11 @@ public class SkijaBrush implements Brush<Image> {
     @Override
     public void reset() {
         paint.reset();
+    }
+
+    @Override
+    public Renderer<Image> getRenderer() {
+        return null;
     }
 
     /**
