@@ -140,4 +140,6 @@ public interface Brush<I> {
      * Resets every globalen brush setting that was made by {@link #setColor(Color)} for example.
      */
     void reset();
+
+    Renderer<I> getRenderer();
 }

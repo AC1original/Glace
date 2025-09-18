@@ -1,6 +1,7 @@
 package com.snac.graphics.impl;
 
 import com.snac.graphics.Brush;
+import com.snac.graphics.Renderer;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +20,7 @@ import java.awt.image.BufferedImage;
 public class SwingBrush implements Brush<BufferedImage> {
     @Setter
     protected Graphics2D graphics;
+    protected Renderer<BufferedImage> renderer;
     protected final Graphics2D original;
     protected float size = 1;
 
@@ -29,7 +31,8 @@ public class SwingBrush implements Brush<BufferedImage> {
      *
      * @param graphics The graphics object the brush draws with
      */
-    public SwingBrush(Graphics graphics) {
+    public SwingBrush(Renderer<BufferedImage> renderer, Graphics graphics) {
+        this.renderer = renderer;
         this.graphics = (Graphics2D) graphics;
         this.original = (Graphics2D) graphics.create();
 

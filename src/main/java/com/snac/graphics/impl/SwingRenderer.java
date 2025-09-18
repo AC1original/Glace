@@ -113,7 +113,7 @@ public class SwingRenderer extends JPanel implements Renderer<BufferedImage> {
             this.bufferStrategy = frame.getBufferStrategy();
             this.setDoubleBuffered(false);
 
-            brush = new SwingBrush(bufferStrategy.getDrawGraphics());
+            brush = new SwingBrush(this, bufferStrategy.getDrawGraphics());
 
             startRenderLoop();
         });
