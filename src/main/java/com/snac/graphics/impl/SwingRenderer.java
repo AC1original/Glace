@@ -3,6 +3,7 @@ package com.snac.graphics.impl;
 import com.snac.graphics.Canvas;
 import com.snac.graphics.Renderer;
 import com.snac.util.Loop;
+import com.snac.util.TryCatch;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -206,23 +207,23 @@ public class SwingRenderer extends JPanel implements Renderer<BufferedImage> {
      */
     @Override
     public void render() {
-        if (getFrame() == null
-                || getFrame().getState() == JFrame.ICONIFIED
+        if (frame == null
+                || frame.getState() == JFrame.ICONIFIED
+                || !frame.isDisplayable()
+                || frame.getWidth() <= 0
+                || frame.getHeight() <= 0
                 || getCanvas() == null) {
             return;
         }
 
-        if (getBufferStrategy() == null) {
-            if (getFrame().isDisplayable() && getFrame().getWidth() > 0 && getFrame().getHeight() > 0) {
-                getFrame().createBufferStrategy(2);
-                bufferStrategy = getFrame().getBufferStrategy();
-            } else {
-                return;
+        try {
+            if (bufferStrategy == null) {
+                frame.createBufferStrategy(2);
+                bufferStrategy = frame.getBufferStrategy();
             }
-        }
 
-        if (!bufferStrategy.contentsLost() && bufferStrategy.getDrawGraphics() != null) {
-            do {
+            boolean done = false;
+            while (!done) {
                 Graphics2D g = null;
                 try {
                     g = (Graphics2D) bufferStrategy.getDrawGraphics();
@@ -231,14 +232,17 @@ public class SwingRenderer extends JPanel implements Renderer<BufferedImage> {
                     brush.setGraphics(g);
                     getCanvas().render(brush);
 
+                    Toolkit.getDefaultToolkit().sync();
+                    bufferStrategy.show();
+
+                    done = !bufferStrategy.contentsLost();
                 } finally {
                     if (g != null) g.dispose();
                 }
-
-                Toolkit.getDefaultToolkit().sync();
-                bufferStrategy.show();
-
-            } while (bufferStrategy.contentsLost());
+            }
+        } catch (NullPointerException | IllegalStateException e) {
+            log.warn("BufferStrategy invalid after resize, will recreate next frame", e);
+            bufferStrategy = null;
         }
     }
 
