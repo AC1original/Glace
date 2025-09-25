@@ -434,7 +434,7 @@ public abstract class AbstractObjectBase<I> implements Renderable<I>, Serializab
     }
 
     /**
-     * Discrete movement and facing directions used by {@code AbstractObjectBase}.
+     * Discrete movement and facing directions.
      * <p>
      * Each enum value holds:
      * </p>
@@ -450,11 +450,6 @@ public abstract class AbstractObjectBase<I> implements Renderable<I>, Serializab
      * When you call {@link #getDeltaX(float)} or {@link #getDeltaY(float)} directly,
      * provide the angle in radians (e.g., use {@link Math#toRadians(double)} to convert
      * from degrees). The {@link #angle} stored in this enum is expressed in degrees.
-     * </p>
-     * <p>
-     * Utility: {@link #getDirection(float)} can be used to map an exact angle value to one of the
-     * predefined directions. If the provided angle does not exactly match a predefined one, it
-     * returns {@code null}.
      * </p>
      *
      * <b>Note:</b> The entire documentation for this enum was written by JetBrains Junie.
