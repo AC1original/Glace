@@ -14,6 +14,9 @@ import java.awt.image.BufferedImage;
  * Since an instance of this class is created by the renderer being used
  * and managed together with its {@link com.snac.graphics.Canvas Canvas},
  * you normally don't need to create an instance yourself - unless you're writing your own renderer.
+ * <p>
+ * <b>Why do rendered objects that are moving look so choppy even though they are rendered at 60fps+?</b>
+ * Try using interpolation. (See {@link Renderer#getInterpolatedX(float, float, float)} and {@link Renderer#getInterpolatedY(float, float, float)})
  */
 @Getter
 @Slf4j
@@ -162,7 +165,7 @@ public class SwingBrush implements Brush<BufferedImage> {
     }
 
     /**
-     * See {@link Brush#drawPixels(Point[])} )}
+     * See {@link Brush#drawPixels(Point[])}
      */
     @Override
     public void drawPixels(Point[] locations) {

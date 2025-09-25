@@ -25,6 +25,9 @@ import java.util.function.BiConsumer;
  * The easiest way to modify the rendering process is by using {@link #setPreRender(Runnable)}, {@link #setRenderLoopAction(BiConsumer)} or {@link #setPostRender(Runnable)}<br>
  * Otherwise, you can extend this class or write your own renderer with the {@link Renderer Renderer interface}
  * </p>
+ * <p>
+ * <b>Why do rendered objects that are moving look so choppy even though they are rendered at 60fps+?</b>
+ * Try using interpolation. (See {@link #getInterpolatedX(float, float, float)} and {@link #getInterpolatedY(float, float, float)})
  */
 @Getter
 @Slf4j
@@ -73,8 +76,7 @@ public class SwingRenderer extends JPanel implements Renderer<BufferedImage> {
                 .threadName("Swing-Rendering")
                 .build();
 
-        preRender = () -> {
-        };
+        preRender = () -> {};
         postRender = () -> log.info("Shutting down render loop");
         renderLoopAction = (fps, deltaTime) -> {
             this.fps = fps;
@@ -251,7 +253,7 @@ public class SwingRenderer extends JPanel implements Renderer<BufferedImage> {
      */
     @Override
     public int getWindowWidth() {
-        return frame == null ? Integer.MAX_VALUE : frame.getWidth();
+        return frame == null ? -1 : frame.getWidth();
     }
 
     /**
@@ -259,7 +261,7 @@ public class SwingRenderer extends JPanel implements Renderer<BufferedImage> {
      */
     @Override
     public int getWindowHeight() {
-        return frame == null ? Integer.MAX_VALUE : frame.getHeight();
+        return frame == null ? -1 : frame.getHeight();
     }
 
     @Override

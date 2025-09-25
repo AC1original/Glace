@@ -20,6 +20,9 @@ import java.util.stream.Stream;
  * The {@link Renderer} will render every {@link Renderable} added to its current Canvas.
  * </p>
  * Also see {@link Renderer} and {@link Renderable} for more information.
+ * <p>
+ * <b>Why do rendered objects that are moving look so choppy even though they are rendered at 60fps+?</b>
+ * Try using interpolation. (See {@link Renderer#getInterpolatedX(float, float, float)} and {@link Renderer#getInterpolatedY(float, float, float)})
  */
 public class Canvas<I> {
     protected final List<Renderable<I>> renderables;

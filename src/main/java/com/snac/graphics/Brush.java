@@ -6,6 +6,9 @@ import java.awt.*;
  * The brush is the only tool you really need to draw on a window created by a {@link Renderer}<br>
  * A Brush instance is passed to an {@link Renderable} by the used {@link Renderer} (or {@link Canvas})
  * <p>I recommend also looking at the named classes and their documentation.</p>
+ * <p>
+ * <b>Why do rendered objects that are moving look so choppy even though they are rendered at 60fps+?</b>
+ * Try using interpolation. (See {@link Renderer#getInterpolatedX(float, float, float)} and {@link Renderer#getInterpolatedY(float, float, float)})
  *
  * @param <I> Generic image
  */
@@ -141,5 +144,8 @@ public interface Brush<I> {
      */
     void reset();
 
+    /**
+     * @return the used {@link Renderer}
+     */
     Renderer<I> getRenderer();
 }
