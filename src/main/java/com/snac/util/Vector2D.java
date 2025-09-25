@@ -38,9 +38,7 @@ public class Vector2D implements Serializable {
      * @param y the y component
      */
     public Vector2D(double x, double y) {
-        this.x = x;
-        this.y = y;
-        set(this.x, this.y);
+        set(x, y);
     }
 
     /**
