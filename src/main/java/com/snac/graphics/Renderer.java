@@ -100,6 +100,8 @@ public interface Renderer<I> {
     /**
      * Calculates the interpolated X position between lastX and newX.<br>
      * <a href="https://de.wikipedia.org/wiki/Interpolation_(Mathematik)">Interpolation (Wikipedia)</a>
+     * <p>
+     * You can also use {@link com.snac.util.Vector2D#getInterpolatedX(float)}
      *
      * @param lastX The previous X position (at the last tick)
      * @param newX The current X position (at the current tick)
@@ -115,6 +117,8 @@ public interface Renderer<I> {
     /**
      * Calculates the interpolated Y position between lastY and newY.<br>
      * <a href="https://de.wikipedia.org/wiki/Interpolation_(Mathematik)">Interpolation (Wikipedia)</a>
+     * <p>
+     * You can also use {@link com.snac.util.Vector2D#getInterpolatedX(float)}
      * <br><br>
      * Wait! Is this recycling?
      * @param lastY The previous Y position (at the last tick)

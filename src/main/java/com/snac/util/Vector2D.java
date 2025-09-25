@@ -1,5 +1,6 @@
 package com.snac.util;
 
+import com.snac.graphics.Renderer;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -224,5 +225,21 @@ public class Vector2D implements Serializable {
      */
     public int getYRound() {
         return Math.toIntExact(Math.round(y));
+    }
+
+    /**
+     * Returns interpolated X-value. Used for smooth rendering (Should be used as X-value in your render methods).<br>
+     *
+     * Same as {@link Renderer#getInterpolatedX(float, float, float)} with fewer parameters
+     */
+    public float getInterpolatedX(float alpha) {
+        return Renderer.getInterpolatedX((float) getOldX(), (float) getX(), alpha);
+    }
+
+    /**
+     * See {@link #getInterpolatedX(float)}
+     */
+    public float getInterpolatedY(float alpha) {
+        return Renderer.getInterpolatedY((float) getOldY(), (float) getY(), alpha);
     }
 }
