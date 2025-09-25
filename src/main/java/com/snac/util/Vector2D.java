@@ -26,10 +26,10 @@ import java.io.Serializable;
 @Getter
 @Slf4j
 public class Vector2D implements Serializable {
-    private double x;
-    private double y;
-    private double oldX;
-    private double oldY;
+    private volatile double x;
+    private volatile double y;
+    private volatile double oldX;
+    private volatile double oldY;
 
     /**
      * Constructs a new Vector2D with the specified x and y components.
@@ -58,7 +58,7 @@ public class Vector2D implements Serializable {
      * @param other the vector to add
      * @return this vector after addition
      */
-    public synchronized Vector2D add(Vector2D other) {
+    public Vector2D add(Vector2D other) {
         set(this.x+other.x, this.y+other.y);
         return this;
     }
@@ -69,7 +69,7 @@ public class Vector2D implements Serializable {
      * @param other the vector to subtract
      * @return this vector after subtraction
      */
-    public synchronized Vector2D subtract(Vector2D other) {
+    public Vector2D subtract(Vector2D other) {
         set(this.x-other.x, this.y-other.y);
         return this;
     }
@@ -80,7 +80,7 @@ public class Vector2D implements Serializable {
      * @param scalar the scalar to multiply by
      * @return this vector after multiplication
      */
-    public synchronized Vector2D multiply(double scalar) {
+    public Vector2D multiply(double scalar) {
         set(this.x*scalar, this.y*scalar);
         return this;
     }
@@ -94,7 +94,7 @@ public class Vector2D implements Serializable {
      * @param scalar the scalar to divide by
      * @return this vector after division
      */
-    public synchronized Vector2D divide(double scalar) {
+    public Vector2D divide(double scalar) {
         if (scalar == 0) {
             log.error("Division by zero", new ArithmeticException("Division by zero"));
         }
@@ -107,7 +107,7 @@ public class Vector2D implements Serializable {
      *
      * @return this vector after negation
      */
-    public synchronized Vector2D negate() {
+    public Vector2D negate() {
         set(-this.x, -this.y);
         return this;
     }
@@ -133,7 +133,7 @@ public class Vector2D implements Serializable {
      *
      * @return this vector after normalization
      */
-    public synchronized Vector2D normalize() {
+    public Vector2D normalize() {
         final double length = length();
         if (length == 0) return this;
         return divide(length);
@@ -144,7 +144,7 @@ public class Vector2D implements Serializable {
      *
      * @return the length of the vector
      */
-    public synchronized double length() {
+    public double length() {
         return Math.sqrt(x * x + y * y);
     }
 
@@ -157,7 +157,7 @@ public class Vector2D implements Serializable {
      *
      * @return the squared length of the vector
      */
-    public synchronized double lengthSquared() {
+    public double lengthSquared() {
         return x * x + y * y;
     }
 
@@ -167,7 +167,7 @@ public class Vector2D implements Serializable {
      * @param other the other vector
      * @return the distance between the two vectors
      */
-    public synchronized double distanceTo(Vector2D other) {
+    public double distanceTo(Vector2D other) {
         double dx = this.x - other.x;
         double dy = this.y - other.y;
         return Math.sqrt(dx * dx + dy * dy);
@@ -183,7 +183,7 @@ public class Vector2D implements Serializable {
      * @return {@code true} if equal, {@code false} otherwise
      */
     @Override
-    public synchronized boolean equals(Object obj) {
+    public boolean equals(Object obj) {
         if (!(obj instanceof Vector2D other)) return false;
 
         return Double.compare(x, other.x) == 0 && Double.compare(y, other.y) == 0;
@@ -194,7 +194,7 @@ public class Vector2D implements Serializable {
      *
      * @return a new Vector2D with the same components as this one
      */
-    public synchronized Vector2D copy() {
+    public Vector2D copy() {
         return new Vector2D(this);
     }
 
@@ -204,7 +204,7 @@ public class Vector2D implements Serializable {
      * @return formatted string like {@code Vector2D(x=1.234, y=5.678)}
      */
     @Override
-    public synchronized String toString() {
+    public String toString() {
         return String.format("Vector2D(x=%.3f, y=%.3f)", x, y);
     }
 
@@ -213,7 +213,7 @@ public class Vector2D implements Serializable {
      *
      * @return rounded X (integer)
      */
-    public synchronized int getXRound() {
+    public int getXRound() {
         return Math.toIntExact(Math.round(x));
     }
 
@@ -222,7 +222,7 @@ public class Vector2D implements Serializable {
      *
      * @return rounded Y (integer)
      */
-    public synchronized int getYRound() {
+    public int getYRound() {
         return Math.toIntExact(Math.round(y));
     }
 }
