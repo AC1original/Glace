@@ -19,14 +19,15 @@ import java.util.function.BiConsumer;
 @Getter
 @Slf4j
 public class Loop {
-    protected boolean running = false;
-    protected boolean paused = false;
+    protected volatile boolean running = false;
+    protected volatile boolean paused = false;
     protected final boolean runOnThread;
     protected final String threadName;
     protected ExecutorService executorService;
     protected final List<BiConsumer<Integer, Double>> joinedActions;
     protected final ReentrantReadWriteLock rwLock;
-    protected double deltaTime = 0;
+    protected volatile double deltaTime = 0;
+    protected volatile double alpha = 0;
 
     /**
      * There are two ways to create a new Loop instance:
@@ -118,6 +119,7 @@ public class Loop {
                     long elapsed = now - lastTime;
                     double deltaTime = elapsed / 1_000_000_000.0;
                     this.deltaTime = deltaTime;
+                    this.alpha = Math.min(elapsed / (double) tickTime, 1.0);
 
                     if (System.currentTimeMillis() - secCount >= 1_000) {
                         secCount = System.currentTimeMillis();

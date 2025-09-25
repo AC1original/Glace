@@ -1,5 +1,7 @@
 package com.snac.graphics;
 
+import com.snac.util.Loop;
+
 /**
  * This interface provides the structure for a Renderer. <br>
  * A Renderer is meant to only handle one window.
@@ -10,6 +12,9 @@ package com.snac.graphics;
  * {@link Renderer} renders the current set {@link Canvas}.
  * This Canvas renders every {@link Renderable} it contains.
  * </p>
+ * <p>
+ * <b>Why do rendered objects that are moving look so choppy even though they are rendered at 60fps+?</b>
+ * Try using interpolation. (See {@link #getInterpolatedX(float, float, float)} and {@link #getInterpolatedY(float, float, float)})
  */
 public interface Renderer<I> {
 
@@ -83,12 +88,43 @@ public interface Renderer<I> {
     void render();
 
     /**
-     * @return the current width of the window. {@code Integer.MAX_VALUE} if no windows exists
+     * @return the current width of the window. {@code <= -1} if no windows exists
      */
     int getWindowWidth();
 
     /**
-     * @return the current width of the window. {@code Integer.MAX_VALUE} if no windows exists
+     * @return the current width of the window. {@code <= -1} if no windows exists
      */
     int getWindowHeight();
+
+    /**
+     * Calculates the interpolated X position between lastX and newX.<br>
+     * <a href="https://de.wikipedia.org/wiki/Interpolation_(Mathematik)">Interpolation (Wikipedia)</a>
+     *
+     * @param lastX The previous X position (at the last tick)
+     * @param newX The current X position (at the current tick)
+     * @param alpha Interpolation factor (0 = lastX, 1 = newX).
+     *              If using {@link com.snac.util.Loop}, you can get this value via {@link Loop#getAlpha()}
+     *              (if the loop is running, otherwise 0)
+     * @return The interpolated X position
+     */
+    static float getInterpolatedX(float lastX, float newX, float alpha) {
+        return lastX + (newX - lastX) * alpha;
+    }
+
+    /**
+     * Calculates the interpolated Y position between lastY and newY.<br>
+     * <a href="https://de.wikipedia.org/wiki/Interpolation_(Mathematik)">Interpolation (Wikipedia)</a>
+     * <br><br>
+     * Wait! Is this recycling?
+     * @param lastY The previous Y position (at the last tick)
+     * @param newY The current Y position (at the current tick)
+     * @param alpha Interpolation factor (0 = lastY, 1 = newY).
+     *              If using {@link com.snac.util.Loop}, you can get this value via {@link Loop#getAlpha()}
+     *              (if the loop is running, otherwise 0)
+     * @return The interpolated Y position
+     */
+    static float getInterpolatedY(float lastY, float newY, float alpha) {
+        return getInterpolatedX(lastY, newY, alpha);
+    }
 }
