@@ -29,6 +29,8 @@ import java.util.stream.Stream;
 @Slf4j
 public class GameObjectManager<I> {
 
+    private static long UUIDs = 0;
+
     /**
      * This {@link Set} contains all game objects managed by this manager.
      */
@@ -83,7 +85,7 @@ public class GameObjectManager<I> {
         return this;
     }
 
-    public GameObjectManager<?> destroyGameObject(UUID uuid) {
+    public GameObjectManager<?> destroyGameObject(long uuid) {
         var gameObject = getGameObjectFromUUID(uuid);
         if (gameObject != null) {
             destroyGameObject(gameObject);
@@ -152,7 +154,7 @@ public class GameObjectManager<I> {
      * @param uuid The UUID to check
      * @return {@code true} if the UUID exists, otherwise {@code false}
      */
-    public boolean containsGameObjectFromUUID(UUID uuid) {
+    public boolean containsGameObjectFromUUID(long uuid) {
         return getGameObjectFromUUID(uuid) != null;
     }
 
@@ -171,7 +173,7 @@ public class GameObjectManager<I> {
      *
      * @return A list of all game object UUIDs
      */
-    public List<UUID> getGameObjectUuids() {
+    public List<Long> getGameObjectUuids() {
         rwLock.readLock().lock();
         try {
             return gameObjects
@@ -204,12 +206,12 @@ public class GameObjectManager<I> {
      * @return The game object with the given UUID, or {@code null} if no such object exists
      */
     @Nullable
-    public AbstractObjectBase<I> getGameObjectFromUUID(UUID uuid) {
+    public AbstractObjectBase<I> getGameObjectFromUUID(long uuid) {
         rwLock.readLock().lock();
         try {
             return gameObjects
                     .stream()
-                    .filter(gO -> gO.getUuid().equals(uuid))
+                    .filter(gO -> gO.getUuid() == uuid)
                     .findFirst()
                     .orElse(null);
         } finally {
@@ -265,5 +267,9 @@ public class GameObjectManager<I> {
      */
     public List<AbstractObjectBase<?>> getGameObjects() {
         return List.copyOf(gameObjects);
+    }
+
+    public static long getNextUUID() {
+        return UUIDs++;
     }
 }

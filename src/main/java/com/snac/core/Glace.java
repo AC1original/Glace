@@ -26,7 +26,7 @@ public final class Glace {
 
     private SwingImageLoader imageLoader;
     private SwingRenderer renderer;
-    private GameObjectManager<BufferedImage> objectManager;
+    private GameObjectManager<BufferedImage> gameObjectManager;
     private AnimationHandler<BufferedImage> animationHandler;
 
     @Setter(AccessLevel.NONE)
@@ -58,7 +58,7 @@ public final class Glace {
 
         imageLoader = new SwingImageLoader();
         renderer = new SwingRenderer(60, null, null);
-        objectManager = new GameObjectManager<>(renderer);
+        gameObjectManager = new GameObjectManager<>(renderer);
         animationHandler = new AnimationHandler<>(renderer);
 
         log.info("Initialized");
@@ -73,7 +73,7 @@ public final class Glace {
 
     //May throw null pointer if Galce was instantiated but not started
     public void tick(double deltaTime) {
-        objectManager.tick(deltaTime);
+        gameObjectManager.tick(deltaTime);
         animationHandler.tick();
     }
 

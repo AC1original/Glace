@@ -10,6 +10,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.LoggerFactory;
 
 import java.awt.*;
 import java.io.Serializable;
@@ -141,7 +142,7 @@ public abstract class AbstractObjectBase<I> implements Renderable<I>, Serializab
     /**
      * Unique identifier assigned to this instance.
      */
-    private final UUID uuid;
+    private final long uuid;
 
     /**
      * Optional visual asset bound to this object.
@@ -202,7 +203,7 @@ public abstract class AbstractObjectBase<I> implements Renderable<I>, Serializab
         this.height = height < 1 ? 20 : height;
         this.hitBox = new HitBox(this.position.getXRound(), this.position.getYRound(), getWidth(), getHeight());
         this.timeCreated = System.currentTimeMillis();
-        this.uuid = UUID.randomUUID();
+        this.uuid = GameObjectManager.getNextUUID();
     }
 
     /**
