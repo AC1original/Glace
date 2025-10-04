@@ -85,7 +85,7 @@ public class Loop {
             return;
         }
 
-        if (executorService == null) {
+        if (executorService == null || executorService.isShutdown()) {
             executorService = Executors.newSingleThreadExecutor(r -> {
                 Thread thread = new Thread(r, threadName);
                 if (!threadName.isBlank()) {
@@ -98,7 +98,7 @@ public class Loop {
         Runnable runnable = () -> {
             try {
                 long secCount = System.currentTimeMillis();
-                int tps = 0;
+                int tps = TARGET_TPS;
                 int tCount = 0;
 
                 long lastTime = System.nanoTime();
@@ -130,13 +130,10 @@ public class Loop {
                     if (elapsed >= tickTime) {
                         tCount++;
                         action.accept(tps, deltaTime);
-                        try {
-                            rwLock.readLock().lock();
+                        synchronized (joinedActions) {
                             for (var eAction : joinedActions) {
                                 eAction.accept(tps, deltaTime);
                             }
-                        } finally {
-                            rwLock.readLock().unlock();
                         }
                         lastTime += tickTime;
                     } else {
@@ -149,7 +146,11 @@ public class Loop {
                         }
                     }
                 }
-                shutdownHook.run();
+                try {
+                    shutdownHook.run();
+                } catch (Exception e) {
+                    log.error("Error during shutdown hook", e);
+                }
             } catch (Exception e) {
                 log.error("Error in loop: {}", e.toString());
                 stop();
