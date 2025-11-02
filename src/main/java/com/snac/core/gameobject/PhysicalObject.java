@@ -6,6 +6,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
+//TODO: Implement AABB collision detection
 @Getter
 public abstract class PhysicalObject<I> extends AbstractObjectBase<I> {
     protected final Vector2D velocity;
@@ -17,7 +18,13 @@ public abstract class PhysicalObject<I> extends AbstractObjectBase<I> {
     protected PhysicalObject(@Nullable Vector2D position, float direction, int width, int height) {
         super(position, direction, width, height);
 
-        this.velocity = new Vector2D(0, 0);
+        this.velocity = new Vector2D(0, 0) {
+            @Override
+            public synchronized void set(double x, double y) {
+                onMove(x, y);
+                super.set(x, y);
+            }
+        };
     }
 
     public void onCollide(List<AbstractObjectBase<I>> collidedObjects) {}
@@ -27,6 +34,9 @@ public abstract class PhysicalObject<I> extends AbstractObjectBase<I> {
         super.internalUpdate(deltaTime);
 
         checkCollisions();
+    }
+
+    public void moveCollisionSafe(float direction, float speed) {
     }
 
     protected void checkCollisions() {
@@ -39,4 +49,6 @@ public abstract class PhysicalObject<I> extends AbstractObjectBase<I> {
 
         onCollide(collisions);
     }
+
+    public void onMove(double newX, double newY) {}
 }

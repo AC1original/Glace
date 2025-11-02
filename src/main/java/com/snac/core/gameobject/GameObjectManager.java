@@ -29,7 +29,7 @@ import java.util.stream.Stream;
 @Slf4j
 public class GameObjectManager<I> {
 
-    private static long UUIDs = 0;
+    private static long IDs = 0;
 
     /**
      * This {@link Set} contains all game objects managed by this manager.
@@ -80,13 +80,20 @@ public class GameObjectManager<I> {
 
         log.info("Added new GameObject of type '{}' with UUID '{}'",
                 gameObject.getClass().getSimpleName(),
-                gameObject.getUuid());
+                gameObject.getId());
 
         return this;
     }
 
-    public GameObjectManager<?> destroyGameObject(long uuid) {
-        var gameObject = getGameObjectFromUUID(uuid);
+    /**
+     * Destroy a gameobject from this manager with its id.<br>
+     * Does nothing if no object with the given id exists.
+     *
+     * @param id the id of the object you want to destroy
+     * @return this manager instance, for chaining
+     */
+    public GameObjectManager<?> destroyGameObject(long id) {
+        var gameObject = getGameObjectFromID(id);
         if (gameObject != null) {
             destroyGameObject(gameObject);
         }
@@ -94,7 +101,7 @@ public class GameObjectManager<I> {
     }
 
     /**
-     * Destroy a game object from this manager.
+     * Destroy a gameobject from this manager.
      *
      * @param gameObject the game object to destroy
      * @return this manager instance, for chaining
@@ -104,9 +111,9 @@ public class GameObjectManager<I> {
         gameObject.onDestroy();
         renderer.getCanvas().removeRenderable(gameObject);
 
-        log.info("Removed GameObject of type '{}' with UUID '{}'",
+        log.info("Removed GameObject of type '{}' with ID '{}'",
                 gameObject.getClass().getSimpleName(),
-                gameObject.getUuid());
+                gameObject.getId());
 
         return this;
     }
@@ -149,13 +156,13 @@ public class GameObjectManager<I> {
     }
 
     /**
-     * Check if a game object with a given UUID exists.
+     * Check if a game object with a given ID exists.
      *
-     * @param uuid The UUID to check
+     * @param id The ID to check
      * @return {@code true} if the UUID exists, otherwise {@code false}
      */
-    public boolean containsGameObjectFromUUID(long uuid) {
-        return getGameObjectFromUUID(uuid) != null;
+    public boolean containsGameObjectFromUUID(long id) {
+        return getGameObjectFromID(id) != null;
     }
 
     /**
@@ -169,16 +176,16 @@ public class GameObjectManager<I> {
     }
 
     /**
-     * Get a list of all game object UUIDs.
+     * Get a list of all game object IDs.
      *
-     * @return A list of all game object UUIDs
+     * @return A list of all game object IDs
      */
     public List<Long> getGameObjectUuids() {
         rwLock.readLock().lock();
         try {
             return gameObjects
                     .stream()
-                    .map(AbstractObjectBase::getUuid)
+                    .map(AbstractObjectBase::getId)
                     .toList();
         } finally {
             rwLock.readLock().unlock();
@@ -202,16 +209,16 @@ public class GameObjectManager<I> {
     /**
      * Get a game object from a given UUID.
      *
-     * @param uuid The UUID to search for
+     * @param id The unique object id to search for
      * @return The game object with the given UUID, or {@code null} if no such object exists
      */
     @Nullable
-    public AbstractObjectBase<I> getGameObjectFromUUID(long uuid) {
+    public AbstractObjectBase<I> getGameObjectFromID(long id) {
         rwLock.readLock().lock();
         try {
             return gameObjects
                     .stream()
-                    .filter(gO -> gO.getUuid() == uuid)
+                    .filter(gO -> gO.getId() == id)
                     .findFirst()
                     .orElse(null);
         } finally {
@@ -269,7 +276,7 @@ public class GameObjectManager<I> {
         return List.copyOf(gameObjects);
     }
 
-    public static long getNextUUID() {
-        return UUIDs++;
+    public static long getNextID() {
+        return IDs++;
     }
 }

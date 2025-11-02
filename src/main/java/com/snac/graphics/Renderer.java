@@ -107,7 +107,7 @@ public interface Renderer<I> {
      * @param newX The current X position (at the current tick)
      * @param alpha Interpolation factor (0 = lastX, 1 = newX).
      *              If using {@link com.snac.util.Loop}, you can get this value via {@link Loop#getAlpha()}
-     *              (if the loop is running, otherwise 0)
+     *              (if the loop is running, otherwise it will return 0)
      * @return The interpolated X position
      */
     static float getInterpolatedX(float lastX, float newX, float alpha) {

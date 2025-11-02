@@ -142,7 +142,7 @@ public abstract class AbstractObjectBase<I> implements Renderable<I>, Serializab
     /**
      * Unique identifier assigned to this instance.
      */
-    private final long uuid;
+    private final long id;
 
     /**
      * Optional visual asset bound to this object.
@@ -203,7 +203,7 @@ public abstract class AbstractObjectBase<I> implements Renderable<I>, Serializab
         this.height = height < 1 ? 20 : height;
         this.hitBox = new HitBox(this.position.getXRound(), this.position.getYRound(), getWidth(), getHeight());
         this.timeCreated = System.currentTimeMillis();
-        this.uuid = GameObjectManager.getNextUUID();
+        this.id = GameObjectManager.getNextID();
     }
 
     /**
@@ -217,7 +217,11 @@ public abstract class AbstractObjectBase<I> implements Renderable<I>, Serializab
      */
     protected void onPositionChange(double newX, double newY) {
         updateAttachments(position.getX(), position.getY(), newX, newY);
-        if (manager == null || manager.getRenderer().getWindowWidth() <= -1) {
+        if (manager == null) {
+            log.warn("Object manager is null. How is that possible?");
+            return;
+        }
+        if (manager.getRenderer().getWindowWidth() <= -1) {
             return;
         }
         var renderer = manager.getRenderer();

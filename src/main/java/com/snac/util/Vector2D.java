@@ -65,6 +65,31 @@ public class Vector2D implements Serializable {
     }
 
     /**
+     * Adds x and y values to this vector.
+     *
+     * @param x the X-Value to add
+     * @param y the Y-Value to add
+     * @return this vector after addition
+     */
+    public Vector2D add(double x, double y) {
+        set(this.x+x, this.y+y);
+        return this;
+    }
+
+
+    /**
+     * Subtracts x and y values from this vector.
+     *
+     * @param x the X-Value to subtract
+     * @param y the Y-Value to subtract
+     * @return this vector after subtraction
+     */
+    public Vector2D subtract(double x, double y) {
+        set(this.x-x, this.y-y);
+        return this;
+    }
+
+    /**
      * Subtracts another vector from this vector.
      *
      * @param other the vector to subtract
