@@ -6,7 +6,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-//TODO: Implement AABB collision detection
 @Getter
 public abstract class PhysicalObject<I> extends AbstractObjectBase<I> {
     protected final Vector2D velocity;
@@ -36,6 +35,15 @@ public abstract class PhysicalObject<I> extends AbstractObjectBase<I> {
         checkCollisions();
     }
 
+    @Override
+    protected void onUpdate(double deltaTime) {
+        position.set(position.getX() + (velocity.getX() * deltaTime), position.getY() + (velocity.getY() * deltaTime));
+        if (velocity.getX() != 0) {
+            var slowFactor = velocity.getX() * 0.3;
+            velocity.set(velocity.getX() * -slowFactor, velocity.getY());
+        }
+    }
+
     public void moveCollisionSafe(float direction, float speed) {
     }
 
@@ -51,4 +59,11 @@ public abstract class PhysicalObject<I> extends AbstractObjectBase<I> {
     }
 
     public void onMove(double newX, double newY) {}
+
+    public boolean isOnGround() {
+        return false;
+    }
+
+    //https://www.rhetos.de/html/lex/luftwiderstand.htm
+    public void getAirResistance(float speed) {}
 }

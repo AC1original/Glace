@@ -267,4 +267,11 @@ public class Vector2D implements Serializable {
     public float getInterpolatedY(float alpha) {
         return Renderer.getInterpolatedY((float) getOldY(), (float) getY(), alpha);
     }
+
+    /**
+     * @return {@code true} if x and y is 0, otherwise {@code false}
+     */
+    public boolean isZero() {
+        return x == 0 && y == 0;
+    }
 }
