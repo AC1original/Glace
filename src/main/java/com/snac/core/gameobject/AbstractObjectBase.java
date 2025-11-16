@@ -15,8 +15,6 @@ import org.jetbrains.annotations.Nullable;
 import java.awt.*;
 import java.io.Serializable;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Set;
 
 /**
  * Base class for renderable and updatable game objects.
@@ -315,7 +313,7 @@ public abstract class AbstractObjectBase<I> extends Attachable<AbstractObjectBas
     }
 
     public void updateAttachments(double oldX, double oldY, double newX, double newY) {
-        onParentPositionChange(child -> {
+        childAction(child -> {
             child.position.set(
                     child.position.getX() - oldX + newX,
                     child.position.getY() - oldY + newY);

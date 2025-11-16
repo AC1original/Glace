@@ -29,19 +29,14 @@ public abstract class PhysicalObject<I> extends AbstractObjectBase<I> {
     public void onCollide(List<AbstractObjectBase<I>> collidedObjects) {}
 
     @Override
-    void internalUpdate(double deltaTime) {
-        super.internalUpdate(deltaTime);
-
-        checkCollisions();
-    }
-
-    @Override
     protected void onUpdate(double deltaTime) {
         position.set(position.getX() + (velocity.getX() * deltaTime), position.getY() + (velocity.getY() * deltaTime));
         if (velocity.getX() != 0) {
             var slowFactor = velocity.getX() * 0.3;
             velocity.set(velocity.getX() * -slowFactor, velocity.getY());
         }
+
+        checkCollisions();
     }
 
     public void moveCollisionSafe(float direction, float speed) {
