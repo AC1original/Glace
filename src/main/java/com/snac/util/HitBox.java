@@ -1,16 +1,15 @@
 package com.snac.util;
 
-import com.snac.graphics.Brush;
-import com.snac.graphics.Renderable;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.awt.*;
 import java.io.Serializable;
+import java.util.function.Consumer;
 
 @Getter
 @Setter
-public class HitBox implements Renderable<Object>, Serializable {
+public class HitBox extends Attachable<HitBox> implements Serializable {
     private int x;
     private int y;
     private int width;
@@ -42,11 +41,13 @@ public class HitBox implements Renderable<Object>, Serializable {
     }
 
     public void move(int dx, int dy) {
+        onMove(x, y, x + dx, y + dy);
         x += dx;
         y += dy;
     }
 
     public void setBounds(int x, int y, int width, int height) {
+        onMove(this.x, this.y, width, height);
         this.x = x;
         this.y = y;
         this.width = width;
@@ -54,10 +55,11 @@ public class HitBox implements Renderable<Object>, Serializable {
     }
 
     public void setBounds(HitBox hitBox) {
-        this.x = hitBox.x;
-        this.y = hitBox.y;
-        this.width = hitBox.width;
-        this.height = hitBox.height;
+        onMove(getX(), getY(), hitBox.getX(), hitBox.getY());
+        this.x = hitBox.getX();
+        this.y = hitBox.getY();
+        this.width = hitBox.getWidth();
+        this.height = hitBox.getHeight();
     }
 
     public Point getLocation() {
@@ -65,18 +67,22 @@ public class HitBox implements Renderable<Object>, Serializable {
         return location;
     }
 
+    public void onMove(int oldX, int oldY, int newX, int newY) {
+        childAction(child -> {
+            child.move(oldX - newX, oldY - newY);
+        });
+    }
+
+    @Override
+    public void childAction(Consumer<HitBox> childAction) {
+        if (attachments.isEmpty()) return;
+        synchronized (attachments) {
+            attachments.forEach(childAction);
+        }
+    }
+
     @Override
     public String toString() {
         return "HitBox [x=" + x + ", y=" + y + ", width=" + width + ", height=" + height;
-    }
-
-    @Override
-    public void render(Brush<Object> brush) {
-        brush.drawRectangle(x, y, width, height, false);
-    }
-
-    @Override
-    public boolean visible() {
-        return visible;
     }
 }
