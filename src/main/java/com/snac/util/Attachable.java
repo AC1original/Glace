@@ -101,7 +101,7 @@ public abstract class Attachable<T extends Attachable<T>> {
      *
      * @param childAction the action to perform on each child
      */
-    protected void childAction(Consumer<T> childAction) {
+    public void childAction(Consumer<T> childAction) {
         if (attachments.isEmpty()) return;
         synchronized (attachments) {
             attachments.forEach(child -> {
