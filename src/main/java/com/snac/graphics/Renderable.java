@@ -58,7 +58,7 @@ public interface Renderable<I> {
      * and {@link #priority()} gets ignored.<br>
      * For example, By setting this to {@code 0} this drawable is the first getting rendered. Everything else gets rendered after (above)
      *
-     * @return {@code -1} or lower to disable this function and use the set {@link Priority Priority},
+     * @return {@code -1} or lower to disable this function and use the {@link Priority Priority},
      * {@code 0 or higher} the renderable is set to the specific layer.
      */
     default int layer() {
