@@ -15,6 +15,7 @@ import org.jetbrains.annotations.Nullable;
 import java.awt.*;
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.function.Consumer;
 
 /**
  * Base class for renderable and updatable game objects.
@@ -114,10 +115,16 @@ public abstract class AbstractObjectBase<I> extends Attachable<AbstractObjectBas
     protected volatile int height;
 
     /**
-     * Axis-aligned bounding box used for collision or spatial queries,
+     * Hitbox used for collision or spatial queries,
      * initialized from the rounded position and current size.
      */
     protected final HitBox hitBox;
+
+    /**
+     * Whether the hitbox is rendered or not.
+     * Also see {@link #showHitBox()} and {@link #hideHitBox()}
+     */
+    protected boolean showHitBox;
 
     /**
      * Wall-clock timestamp (milliseconds since epoch) at which this instance was created.
@@ -252,7 +259,14 @@ public abstract class AbstractObjectBase<I> extends Attachable<AbstractObjectBas
      *
      * @param brush drawing context provided by the renderer
      */
-    public abstract void onRender(Brush<?> brush);
+    public void onRender(Brush<?> brush) {
+        if (showHitBox) {
+            brush.drawRectangle(getHitBox().getX(), getHitBox().getY(), getHitBox().getWidth(), getHitBox().getHeight(), false);
+            getHitBox().childAction(child -> {
+                brush.drawRectangle(child.getX(), child.getY(), child.getWidth(), child.getHeight(), false);
+            });
+        }
+    }
 
     /**
      * Update hook invoked by the framework.
@@ -267,12 +281,15 @@ public abstract class AbstractObjectBase<I> extends Attachable<AbstractObjectBas
     /**
      * One-time initialization hook invoked after the object has been added to a valid {@link GameObjectManager}.
      */
-    abstract void onCreate();
+    protected void onCreate() {
+        this.tickDistance = (Toolkit.getDefaultToolkit().getScreenSize().width / 2) + getWidth() + 200;
+        this.renderDistance = tickDistance;
+    }
 
     /**
      * Cleanup hook invoked when the object is being destroyed.
      */
-    abstract void onDestroy();
+    protected void onDestroy() {}
 
     /**
      * Framework-internal update entry point; delegates to {@link #onUpdate(double)}.
@@ -293,8 +310,6 @@ public abstract class AbstractObjectBase<I> extends Attachable<AbstractObjectBas
      */
     void internalCreate(GameObjectManager<I> gameObjectManager) {
         this.manager = gameObjectManager;
-        this.tickDistance = (Toolkit.getDefaultToolkit().getScreenSize().width / 2) + getWidth() + 200;
-        this.renderDistance = tickDistance;
         this.onCreate();
     }
 
@@ -312,12 +327,43 @@ public abstract class AbstractObjectBase<I> extends Attachable<AbstractObjectBas
         return hitBox;
     }
 
+    /**
+     * Updates the relative position of attached objects.
+     * See {@link Attachable} (and {@link Attachable#childAction(Consumer)})
+     *
+     * @param oldX old X-value of this object
+     * @param oldY old Y-value of this object
+     * @param newX new X-value of this object
+     * @param newY new Y-value of this object
+     */
     public void updateAttachments(double oldX, double oldY, double newX, double newY) {
         childAction(child -> {
             child.position.set(
                     child.position.getX() - oldX + newX,
                     child.position.getY() - oldY + newY);
         });
+    }
+
+    /**
+     * When called, {@link #showHitBox} is set to {@code true}
+     * and the hitbox (and its attached hitboxes) of this object gets rendered in {@link #onRender(Brush)}.
+     */
+    public void showHitBox() {
+        if (!showHitBox) {
+            showHitBox = true;
+            log.info("Showing hit box of object {}", getId());
+        }
+    }
+
+    /**
+     * When called, {@link #showHitBox} is set to {@code false}
+     * and the hitbox (and its attached hitboxes) of this object gets rendered in {@link #onRender(Brush)}.
+     */
+    public void hideHitBox() {
+        if (showHitBox) {
+            showHitBox = false;
+            log.info("Hiding hit box of object {}", getId());
+        }
     }
 
     /**
