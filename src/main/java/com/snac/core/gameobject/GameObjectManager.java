@@ -180,7 +180,7 @@ public class GameObjectManager<I> {
      *
      * @return A list of all game object IDs
      */
-    public List<Long> getGameObjectUuids() {
+    public List<Long> getGameObjectIDs() {
         rwLock.readLock().lock();
         try {
             return gameObjects
