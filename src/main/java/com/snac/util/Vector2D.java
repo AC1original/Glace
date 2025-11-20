@@ -39,7 +39,10 @@ public class Vector2D implements Serializable {
      * @param y the y component
      */
     public Vector2D(double x, double y) {
-        set(x, y);
+        this.x = x;
+        this.y = y;
+        this.oldX = x;
+        this.oldY = y;
     }
 
     /**
@@ -48,9 +51,10 @@ public class Vector2D implements Serializable {
      * @param other the vector to copy
      */
     public Vector2D(Vector2D other) {
-        set(other.x, other.y);
-        oldX = other.oldX;
-        oldY = other.oldY;
+        this.x = other.x;
+        this.y = other.y;
+        this.oldX = other.oldX;
+        this.oldY = other.oldY;
     }
 
     /**
