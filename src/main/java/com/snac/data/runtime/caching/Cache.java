@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
+ * TODO: Improve Cache functionality and Builder method naming
  * A generic cache for storing objects of type {@code T}.
  * <p>
  * Unlike a standard list, this cache allows you to define custom logic for handling stored data,
