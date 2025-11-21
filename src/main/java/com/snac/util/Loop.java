@@ -15,6 +15,7 @@ import java.util.function.BiConsumer;
 
 /**
  * This class is used to create (Game-)Loops with a specific tps frequency
+ * TODO: ERROR 20:02:16.735 [Swing-Rendering] com.snac.util.Loop - Error in loop: java.lang.RuntimeException: java.lang.InterruptedException: sleep interrupted
  */
 @Getter
 @Slf4j
@@ -101,9 +102,12 @@ public class Loop {
                 int tps = TARGET_TPS;
                 int tCount = 0;
 
-                long lastTime = System.nanoTime();
+                final long TICK_TIME = 1_000_000_000L / TARGET_TPS;
+                long previous = System.nanoTime();
+                long accumulator = 0;
 
                 while (running) {
+
                     if (paused) {
                         try {
                             Thread.sleep(20);
@@ -114,38 +118,43 @@ public class Loop {
                         continue;
                     }
 
-                    final long tickTime = 1_000_000_000 / TARGET_TPS;
                     long now = System.nanoTime();
-                    long elapsed = now - lastTime;
-                    double deltaTime = elapsed / 1_000_000_000.0;
-                    this.deltaTime = deltaTime;
-                    this.alpha = Math.min(elapsed / (double) tickTime, 1.0);
+                    long frameTime = now - previous;
+                    previous = now;
 
-                    if (System.currentTimeMillis() - secCount >= 1_000) {
+                    if (frameTime > 250_000_000L) {
+                        frameTime = 250_000_000L;
+                    }
+
+                    accumulator += frameTime;
+
+                    if (System.currentTimeMillis() - secCount >= 1000) {
                         secCount = System.currentTimeMillis();
                         tps = tCount;
                         tCount = 0;
                     }
 
-                    if (elapsed >= tickTime) {
+                    while (accumulator >= TICK_TIME) {
+                        double dt = TICK_TIME / 1_000_000_000.0;
+                        this.deltaTime = dt;
+
                         tCount++;
-                        action.accept(tps, deltaTime);
+
+                        action.accept(tps, dt);
                         synchronized (joinedActions) {
                             for (var eAction : joinedActions) {
-                                eAction.accept(tps, deltaTime);
+                                eAction.accept(tps, dt);
                             }
                         }
-                        lastTime += tickTime;
-                    } else {
-                        long sleepNanos = tickTime - elapsed;
-                        try {
-                            Thread.sleep(sleepNanos / 1_000_000, (int) (sleepNanos % 1_000_000));
-                        } catch (InterruptedException e) {
-                            Thread.currentThread().interrupt();
-                            throw new RuntimeException(e);
-                        }
+
+                        accumulator -= TICK_TIME;
                     }
+
+                    this.alpha = accumulator / (double) TICK_TIME;
+
+                    Thread.sleep(1);
                 }
+
                 try {
                     shutdownHook.run();
                 } catch (Exception e) {
