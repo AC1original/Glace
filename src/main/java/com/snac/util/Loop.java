@@ -161,7 +161,7 @@ public class Loop {
                     log.error("Error during shutdown hook", e);
                 }
             } catch (Exception e) {
-                log.error("Error in loop: {}", e.toString());
+                log.error("Error in loop.", e);
                 stop();
             }
         };
