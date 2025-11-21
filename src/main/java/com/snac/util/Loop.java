@@ -15,7 +15,6 @@ import java.util.function.BiConsumer;
 
 /**
  * This class is used to create (Game-)Loops with a specific tps frequency
- * TODO: ERROR 20:02:16.735 [Swing-Rendering] com.snac.util.Loop - Error in loop: java.lang.RuntimeException: java.lang.InterruptedException: sleep interrupted
  */
 @Getter
 @Slf4j
